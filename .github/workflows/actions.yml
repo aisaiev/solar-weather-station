@@ -11,6 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
-          docker stop $(docker ps -q --filter ancestor=${{ secrets.CONTAINER_NAME }}:${{ CONTAINER_TAG }}) || true && docker rm --force ${{ secrets.CONTAINER_NAME }} || true && docker rmi --force ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }} || true
+          docker stop $(docker ps -q --filter ancestor=${{ secrets.CONTAINER_NAME }}:${{ secrets.CONTAINER_TAG }}) || true && docker rm --force ${{ secrets.CONTAINER_NAME }} || true && docker rmi --force ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }} || true
           docker build . -t ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }}
           docker run -p 3000:3000 --name ${{ secrets.CONTAINER_NAME }} -d ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }}
