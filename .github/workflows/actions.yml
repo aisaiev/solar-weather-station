@@ -13,11 +13,11 @@ jobs:
       - run: |
           touch .env
           echo DATABASE_URL="${{ secrets.DATABASE_URL }}" >> .env
-          echo DATABASE_URL="${{ secrets.MQTT_HOST }}" >> .env
-          echo DATABASE_URL="${{ secrets.MQTT_PORT }}" >> .env
-          echo DATABASE_URL="${{ secrets.MQTT_USER }}" >> .env
-          echo DATABASE_URL="${{ secrets.MQTT_PASSWORD }}" >> .env
-          echo DATABASE_URL="${{ secrets.MQTT_TOPIC }}" >> .env
+          echo MQTT_HOST="${{ secrets.MQTT_HOST }}" >> .env
+          echo MQTT_PORT="${{ secrets.MQTT_PORT }}" >> .env
+          echo MQTT_USER="${{ secrets.MQTT_USER }}" >> .env
+          echo MQTT_PASSWORD="${{ secrets.MQTT_PASSWORD }}" >> .env
+          echo MQTT_TOPIC="${{ secrets.MQTT_TOPIC }}" >> .env
           docker stop $(docker ps -q --filter ancestor=${{ secrets.CONTAINER_NAME }}:${{ secrets.CONTAINER_TAG }}) || true && docker rm --force ${{ secrets.CONTAINER_NAME }} || true && docker rmi --force ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }} || true
           docker build . -t ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }} --progress=plain
           docker run -p 3000:3000 --name ${{ secrets.CONTAINER_NAME }} -d ${{ secrets.CONTAINER_IMAGE }}:${{ secrets.CONTAINER_TAG }}
