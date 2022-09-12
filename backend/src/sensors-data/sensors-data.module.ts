@@ -5,6 +5,7 @@ import { SensorsDataService } from './service/sensors-data.service';
 
 @Module({
   imports: [DatabaseModule],
+  exports: [SensorsDataService],
   controllers: [SensorsDataController],
   providers: [SensorsDataService],
 })
