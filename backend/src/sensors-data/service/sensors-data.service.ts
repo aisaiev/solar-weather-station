@@ -24,6 +24,7 @@ export class SensorsDataService {
           lte: new Date(),
         },
       },
+      orderBy: { date: 'asc' },
     });
   }
 
@@ -35,6 +36,7 @@ export class SensorsDataService {
           lte: new Date(),
         },
       },
+      orderBy: { date: 'asc' },
     });
   }
 
@@ -46,6 +48,7 @@ export class SensorsDataService {
           lte: new Date(),
         },
       },
+      orderBy: { date: 'asc' },
     });
   }
 
