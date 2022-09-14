@@ -12,10 +12,6 @@ export class MqttService implements OnModuleInit {
   private logger = new Logger(MqttService.name);
   private mqttClient: MqttClient;
 
-  get mqttClientConnected(): boolean {
-    return this.mqttClient.connected;
-  }
-
   constructor(
     private readonly configService: ConfigService,
     private readonly sensorsDataService: SensorsDataService,

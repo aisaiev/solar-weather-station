@@ -10,4 +10,19 @@ export class SensorsDataController {
   async getLatestSensorsData(): Promise<SensorsData> {
     return this.sensorsDataService.getLatestSensorsData();
   }
+
+  @Get('day')
+  async getSensorsDataForDay(): Promise<SensorsData[]> {
+    return this.sensorsDataService.getSensorsDataForDay();
+  }
+
+  @Get('week')
+  async getSensorsDataForWeek(): Promise<SensorsData[]> {
+    return this.sensorsDataService.getSensorsDataForWeek();
+  }
+
+  @Get('month')
+  async getSensorsDataForMonth(): Promise<SensorsData[]> {
+    return this.sensorsDataService.getSensorsDataForMonth();
+  }
 }
