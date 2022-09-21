@@ -1,4 +1,4 @@
-import { SERVER_API_URL } from '../constants/app.constants';
+import { SERVER_API_URL } from '../constants/constants';
 import axios from 'axios';
 
 export const httpClient = axios.create({
