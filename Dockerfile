@@ -4,6 +4,10 @@ COPY . /solar-weather-station
 
 RUN ls -a
 
+WORKDIR /solar-weather-station
+
+RUN ls -a
+
 WORKDIR /solar-weather-station/frontend
 
 RUN npm install
