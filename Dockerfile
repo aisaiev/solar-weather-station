@@ -1,20 +1,14 @@
 FROM node:16
 
-RUN ls -a
-
 COPY . /solar-weather-station
 
 RUN ls -a
 
 WORKDIR /solar-weather-station
 
-RUN ls -a
-
 COPY .env backend/
 
-WORKDIR /solar-weather-station/backend
-
-RUN ls -a
+COPY .env frontend/
 
 WORKDIR /solar-weather-station/frontend
 
