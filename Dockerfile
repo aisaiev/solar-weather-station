@@ -4,7 +4,7 @@ COPY . /solar-weather-station
 
 RUN ls -a
 
-COPY /solar-weather-station/.env /solar-weather-station/backend
+COPY solar-weather-station/.env solar-weather-station/backend
 
 WORKDIR /solar-weather-station/frontend
 
