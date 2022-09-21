@@ -6,7 +6,7 @@ COPY . /solar-weather-station
 
 RUN ls -a
 
-WORKDIR /solar-weather-statio
+WORKDIR /solar-weather-station
 
 RUN ls -a
 
