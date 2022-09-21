@@ -1,16 +1,30 @@
 FROM node:16
 
-COPY . .
+COPY . /solar-weather-station
 
 RUN ls -a
 
-WORKDIR /backend
+WORKDIR /solar-weather-station
+
+COPY .env backend/
+
+COPY .env frontend/
+
+WORKDIR /solar-weather-station/frontend
 
 RUN npm install
 
 RUN npm run build
 
-COPY . .
+RUN ls -a
+
+WORKDIR /solar-weather-station/backend
+
+RUN ls -a
+
+RUN npm install
+
+RUN npm run build
 
 RUN ls -a
 
