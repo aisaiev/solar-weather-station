@@ -10,7 +10,7 @@ WORKDIR /solar-weather-station
 
 RUN ls -a
 
-COPY .env solar-weather-station/backend
+COPY .env backend/
 
 WORKDIR /solar-weather-station/backend
 
