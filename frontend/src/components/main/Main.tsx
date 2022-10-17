@@ -127,18 +127,6 @@ function Main() {
             </tr>
             <tr>
               <td className="white-space-nowrap">
-                <i className="fa-solid fa-mountain-city"></i> Altitude
-              </td>
-              <td>
-                <span aria-busy={isMainDataLoading}>
-                  {sensorsData &&
-                    formatNumberPrecission(sensorsData?.altitude, 1)}{' '}
-                  {sensorsData && 'mamsl'}
-                </span>
-              </td>
-            </tr>
-            <tr>
-              <td className="white-space-nowrap">
                 <i className="fa-solid fa-bolt"></i> Battery voltage
               </td>
               <td>
