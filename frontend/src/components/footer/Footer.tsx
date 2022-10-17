@@ -1,6 +1,8 @@
+import { useState } from 'react';
+
 function Footer() {
-  const creator = 'Anton Isaiev';
-  const twitterUrl = 'https://twitter.com/de_tores';
+  const [creator] = useState('Anton Isaiev');
+  const [twitterUrl] = useState('https://twitter.com/de_tores');
 
   return (
     <footer className="container text-align-center">
