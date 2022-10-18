@@ -14,7 +14,7 @@ function SensorsDataTable() {
 
   const getLatestSensorsData = async () => {
     setIsDataLoading(true);
-    const { data } = await SensorsDataService.getLatest();
+    const { data } = await SensorsDataService.getLatestData();
     setSensorsData(data);
     setIsDataLoading(false);
   };
