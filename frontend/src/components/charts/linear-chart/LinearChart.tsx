@@ -26,6 +26,10 @@ function LinearChart({ data }: { data: ChartData<'line'> }) {
         display: false,
       },
       zoom: {
+        pan: {
+          enabled: true,
+          mode: 'x' as const,
+        },
         zoom: {
           wheel: {
             enabled: true,
