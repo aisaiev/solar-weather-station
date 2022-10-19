@@ -123,7 +123,7 @@ function SensorsDataTable() {
           <td>
             <span aria-busy={isDataLoading}>
               {sensorsData &&
-                formatNumberPrecission(sensorsData?.batteryVoltage, 1)}{' '}
+                formatNumberPrecission(sensorsData?.batteryVoltage, 2)}{' '}
               {sensorsData && 'V'}
             </span>
           </td>
