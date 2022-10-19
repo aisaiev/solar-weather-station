@@ -22,9 +22,6 @@ function LinearChart({ data }: { data: ChartData<'line'> }) {
 
   const options = {
     plugins: {
-      legend: {
-        display: false,
-      },
       zoom: {
         pan: {
           enabled: true,
