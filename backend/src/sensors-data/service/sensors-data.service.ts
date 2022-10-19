@@ -44,7 +44,7 @@ export class SensorsDataService {
     return this.prismaService.sensorsData.findMany({
       where: {
         date: {
-          gte: new Date(new Date().setDate(new Date().getMonth() - 1)),
+          gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
           lte: new Date(),
         },
       },
