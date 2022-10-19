@@ -15,9 +15,6 @@ function BarChart({ data }: { data: ChartData<'bar'> }) {
       tooltip: {
         enabled: false,
       },
-      legend: {
-        display: false,
-      },
     },
     responsive: true,
     scales: {

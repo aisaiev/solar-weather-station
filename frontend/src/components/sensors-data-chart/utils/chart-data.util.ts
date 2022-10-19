@@ -22,6 +22,7 @@ export const getLineChartData = (
       {
         label: sensorType,
         borderColor: 'hsl(195deg, 85%, 41%)',
+        cubicInterpolationMode: 'monotone',
         data: sensorsData.map((sd) => {
           switch (sensorType) {
             case SensorType.Temperature:
