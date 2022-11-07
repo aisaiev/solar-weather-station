@@ -19,6 +19,10 @@ PubSubClient mqttClient(espClient);
 void initMqttServer();
 void connectMqtt();
 void publishSensorsData();
+void deepSleep();
+
+const int wifiConnectionAttemptsCount = 5;
+const int mqttConnectionAttemptsCount = 5;
 
 void setup()
 {
@@ -34,10 +38,17 @@ void setup()
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-    while (WiFi.status() != WL_CONNECTED)
+    int wifiConnectionAttempts = 0;
+    while (WiFi.status() != WL_CONNECTED && wifiConnectionAttempts <= wifiConnectionAttemptsCount)
     {
-        delay(1000);
+        delay(5000);
         Serial.print(".");
+
+        if (wifiConnectionAttempts == wifiConnectionAttemptsCount)
+        {
+            deepSleep();
+        }
+        wifiConnectionAttempts++;
     }
 
     Serial.println("");
@@ -58,7 +69,14 @@ void loop()
         connectMqtt();
     }
     mqttClient.loop();
-    
+
+    deepSleep();
+}
+
+void deepSleep()
+{
+    Serial.println("");
+    Serial.println("Going to deep sleep");
     ESP.deepSleep(SLEEP_DURATION);
 }
 
@@ -143,35 +161,7 @@ SensorsData getSensorsData()
     return data;
 }
 
-//=====================
-// MQTT
-//=====================
-void initMqttServer()
-{
-    mqttClient.setBufferSize(512);
-    mqttClient.setServer(MQTT_HOST, MQTT_PORT);
-}
-
-void connectMqtt()
-{
-    while (!mqttClient.connected())
-    {
-        Serial.println("Connecting to MQTT broker...");
-        if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD))
-        {
-            Serial.println("MQTT Connected");
-            publishSensorsData();
-            Serial.println("MQTT data has been sent");
-        }
-        else
-        {
-            Serial.println("Unable connect to MQTT");
-            delay(5000);
-        }
-    }
-}
-
-void publishSensorsData()
+DynamicJsonDocument getSensorsDataJson()
 {
     SensorsData data = getSensorsData();
 
@@ -188,7 +178,47 @@ void publishSensorsData()
     json["batteryLevel"] = data.batteryLevel;
     json["batteryCharging"] = data.batteryCharging;
 
+    return json;
+}
+
+//=====================
+// MQTT
+//=====================
+void initMqttServer()
+{
+    mqttClient.setBufferSize(512);
+    mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+}
+
+void connectMqtt()
+{
+    int mqttConnectionAttempts = 0;
+    while (!mqttClient.connected() && mqttConnectionAttempts <= mqttConnectionAttemptsCount)
+    {
+        Serial.println("Connecting to MQTT broker...");
+        if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD))
+        {
+            Serial.println("MQTT Connected");
+            publishSensorsData();
+            Serial.println("MQTT data has been sent");
+        }
+        else
+        {
+            Serial.println("Unable connect to MQTT");
+            delay(5000);
+            
+            if (mqttConnectionAttempts == mqttConnectionAttemptsCount)
+            {
+                deepSleep();
+            }
+        }
+        mqttConnectionAttempts++;
+    }
+}
+
+void publishSensorsData()
+{
     String payload;
-    serializeJson(json, payload);
+    serializeJson(getSensorsDataJson(), payload);
     mqttClient.publish(MQTT_TOPIC, payload.c_str(), true);
 }
