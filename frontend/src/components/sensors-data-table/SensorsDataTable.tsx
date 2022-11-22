@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { SensorsData } from '../../services/sensors-data/sensors-data.model';
 import {
   booleanToYesNo,
-  convertDateStringToKyivTimeString,
+  convertDateStringToKyivDateTimeString,
   formatNumberPrecission,
   getKyivLocalTimeString,
 } from '../../utils/formatter.util';
@@ -43,7 +43,7 @@ function SensorsDataTable() {
           <td>
             <span aria-busy={isDataLoading}>
               {sensorsData &&
-                convertDateStringToKyivTimeString(sensorsData?.date)}
+                convertDateStringToKyivDateTimeString(sensorsData?.date)}
             </span>
           </td>
         </tr>

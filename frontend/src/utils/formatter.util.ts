@@ -11,21 +11,34 @@ export const booleanToYesNo = (value: boolean | undefined): 'Yes' | 'No' => {
 };
 
 export const getKyivLocalTimeString = (): string => {
-  const time = new Date().toLocaleTimeString('uk', {
+  return new Date().toLocaleTimeString('us', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Kiev',
+    timeZoneName: 'short',
   });
-  return `${time} EEST`;
 };
 
 export const convertDateStringToKyivTimeString = (
   value: string | undefined,
 ): string => {
-  const time = (value ? new Date(value) : new Date()).toLocaleTimeString('uk', {
+  return (value ? new Date(value) : new Date()).toLocaleTimeString('us', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Kiev',
+    timeZoneName: 'short',
   });
-  return `${time} EEST`;
+};
+
+export const convertDateStringToKyivDateTimeString = (
+  value: string | undefined
+): string => {
+  return (value ? new Date(value) : new Date()).toLocaleDateString('us', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Europe/Kiev',
+    timeZoneName: 'short',
+  });
 };
