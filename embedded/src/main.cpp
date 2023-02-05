@@ -24,6 +24,10 @@ void deepSleep();
 const int wifiConnectionAttemptsCount = 5;
 const int mqttConnectionAttemptsCount = 5;
 
+const int totalEspRam = 81920;
+const float minBatteryVoltage = 2.8;
+const float maxBatteryVoltage = 4.2;
+
 void setup()
 {
     Serial.begin(SERIAL_BAUD);
@@ -95,16 +99,14 @@ float getCpuFrequency()
 
 float getRamUsageKb()
 {
-    int totalRam = 81920;
-    int ramUsage = totalRam - ESP.getFreeHeap();
+    int ramUsage = totalEspRam - ESP.getFreeHeap();
     return (float)ramUsage / 1000;
 }
 
 float getRamUsagePercent()
 {
-    int totalRam = 81920;
-    int ramUsage = totalRam - ESP.getFreeHeap();
-    return (float)ramUsage / totalRam * 100;
+    int ramUsage = totalEspRam - ESP.getFreeHeap();
+    return (float)ramUsage / totalEspRam * 100;
 }
 
 float getTemperature()
@@ -129,12 +131,13 @@ float getAltitude()
 
 int getBatteryLevel()
 {
-    return (int)((analogRead(0) * 100) / 1024);
+    float batteryVoltage = getBatteryVoltage();
+    return round((((batteryVoltage - minBatteryVoltage) / (maxBatteryVoltage - minBatteryVoltage)) * 100));
 }
 
 float getBatteryVoltage()
 {
-    return 4.2 * ((float)analogRead(0) / 1024.0);
+    return maxBatteryVoltage * ((float)analogRead(0) / 1024.0);
 }
 
 bool getBatteryCharging()
@@ -196,7 +199,7 @@ void connectMqtt()
     while (!mqttClient.connected() && mqttConnectionAttempts <= mqttConnectionAttemptsCount)
     {
         Serial.println("Connecting to MQTT broker...");
-        if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD))
+        if (mqttClient.connect(MQTT_CLIENT_ID))
         {
             Serial.println("MQTT Connected");
             publishSensorsData();
