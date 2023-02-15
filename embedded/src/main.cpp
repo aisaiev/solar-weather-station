@@ -223,5 +223,5 @@ void publishSensorsData()
 {
     String payload;
     serializeJson(getSensorsDataJson(), payload);
-    mqttClient.publish(MQTT_TOPIC, payload.c_str(), true);
+    mqttClient.publish(MQTT_TOPIC, payload.c_str(), false);
 }
