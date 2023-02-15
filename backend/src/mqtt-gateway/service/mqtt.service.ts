@@ -20,12 +20,6 @@ export class MqttService implements OnModuleInit {
   onModuleInit(): void {
     const host = this.configService.get<string>(EnvironmentVariables.MQTT_HOST);
     const port = this.configService.get<number>(EnvironmentVariables.MQTT_PORT);
-    const username = this.configService.get<string>(
-      EnvironmentVariables.MQTT_USER,
-    );
-    const password = this.configService.get<string>(
-      EnvironmentVariables.MQTT_PASSWORD,
-    );
     const topic = this.configService.get<string>(
       EnvironmentVariables.MQTT_TOPIC,
     );
@@ -33,8 +27,6 @@ export class MqttService implements OnModuleInit {
     this.mqttClient = connect({
       host,
       port,
-      username,
-      password,
     });
 
     this.mqttClient.on('connect', () => {
