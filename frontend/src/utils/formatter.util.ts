@@ -11,7 +11,7 @@ export const booleanToYesNo = (value: boolean | undefined): 'Yes' | 'No' => {
 };
 
 export const getKyivLocalTimeString = (): string => {
-  return new Date().toLocaleTimeString('us', {
+  return new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Kiev',
@@ -22,7 +22,7 @@ export const getKyivLocalTimeString = (): string => {
 export const convertDateStringToKyivTimeString = (
   value: string | undefined,
 ): string => {
-  return (value ? new Date(value) : new Date()).toLocaleTimeString('us', {
+  return (value ? new Date(value) : new Date()).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     timeZone: 'Europe/Kiev',
@@ -33,7 +33,7 @@ export const convertDateStringToKyivTimeString = (
 export const convertDateStringToKyivDateTimeString = (
   value: string | undefined
 ): string => {
-  return (value ? new Date(value) : new Date()).toLocaleDateString('us', {
+  return (value ? new Date(value) : new Date()).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
