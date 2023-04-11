@@ -31,14 +31,14 @@ export class SensorsDataMqttInput {
   @IsNumber()
   uvRisk: number;
 
-  @IsString()
-  uvRiskText: string;
+  @IsNumber()
+  uvIndex: number;
 
   @IsNumber()
   uvPower: number;
 
   @IsNumber()
-  lux: number;
+  illuminance: number;
 
   @IsNumber()
   batteryVoltage: number;
@@ -60,9 +60,9 @@ export class SensorsDataMqttInput {
     altitude: number;
     uvLevel: number;
     uvRisk: number;
-    uvRiskText: string;
+    uvIndex: number;
     uvPower: number;
-    lux: number;
+    illuminance: number;
     batteryVoltage: number;
     batteryLevel: number;
     batteryCharging: boolean;
@@ -77,9 +77,9 @@ export class SensorsDataMqttInput {
     this.altitude = data.altitude;
     this.uvLevel = data.uvLevel;
     this.uvRisk = data.uvRisk;
-    this.uvRiskText = data.uvRiskText;
+    this.uvIndex = data.uvIndex;
     this.uvPower = data.uvPower;
-    this.lux = data.lux;
+    this.illuminance = data.illuminance;
     this.batteryVoltage = data.batteryVoltage;
     this.batteryLevel = data.batteryLevel;
     this.batteryCharging = data.batteryCharging;

@@ -22,9 +22,9 @@ model SensorsData {
   altitude Float
   uvLevel Int
   uvRisk Float
-  uvRiskText String
+  uvIndex Int
   uvPower Float
-  lux Float
+  illuminance Float
   batteryVoltage Float
   batteryLevel Int
   batteryCharging Boolean
