@@ -20,7 +20,7 @@ model SensorsData {
   humidity Float
   pressure Float
   altitude Float
-  uvLevel Float
+  uvLevel Int
   uvRisk Float
   uvRiskText String
   uvPower Float
