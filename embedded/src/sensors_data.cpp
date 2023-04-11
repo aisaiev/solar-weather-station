@@ -10,6 +10,11 @@ struct SensorsData
     float humidity;
     float pressure;
     float altitude;
+    int uvLevel;
+    float uvRisk;
+    int uvIndex;
+    float uvPower;
+    float illuminance;
     float batteryVoltage;
     int batteryLevel;
     bool batteryCharging;

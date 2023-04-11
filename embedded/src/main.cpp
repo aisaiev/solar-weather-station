@@ -7,17 +7,35 @@
 #include "Adafruit_SHT31.h"
 #include <Adafruit_BMP280.h>
 #include <Adafruit_Sensor.h>
+#include <Adafruit_VEML6070.h>
+#include <BH1750.h>
 #include "sensors_data.cpp"
 #include "constants.h"
 
-Adafruit_BMP280 bmp;
+#define VEML6070_RSET_DEFAULT 270000
+#define VEML6070_UV_MAX_INDEX 15
+#define VEML6070_UV_MAX_DEFAULT 11
+#define VEML6070_POWER_COEFFCIENT 0.025
+#define VEML6070_TABLE_COEFFCIENT 32.86270591
+#define UV_INDEX_1 1 // sun->fun
+#define UV_INDEX_2 2 // sun->glases advised
+#define UV_INDEX_3 3 // sun->glases a must
+#define UV_INDEX_4 4 // sun->skin burns Level 1
+#define UV_INDEX_5 5 // sun->skin burns level 1..2
+#define UV_INDEX_6 6 // sun->skin burns with level 3
+#define UV_INDEX_7 7 // out of range or unknown
+
+BH1750 bh1750;
+Adafruit_BMP280 bmp280;
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
+Adafruit_VEML6070 veml6070 = Adafruit_VEML6070();
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
 void initMqttServer();
 void connectMqtt();
+void uvTableInit();
 void publishSensorsData();
 void deepSleep();
 
@@ -27,13 +45,24 @@ const int mqttConnectionAttemptsCount = 5;
 const int totalEspRam = 81920;
 const float minBatteryVoltage = 2.8;
 const float maxBatteryVoltage = 4.2;
+float uvRiskMap[VEML6070_UV_MAX_INDEX] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+struct UvRisk
+{
+    float risk;
+    int index;
+};
 
 void setup()
 {
     Serial.begin(SERIAL_BAUD);
+    Wire.begin();
 
-    bmp.begin(BMP_SENSOR_I2C_ADDRESS);
+    bmp280.begin(BMP_SENSOR_I2C_ADDRESS);
     sht31.begin(SHT_SENSOR_I2C_ADDRESS);
+    veml6070.begin(VEML6070_4_T);
+    bh1750.begin(BH1750::ONE_TIME_HIGH_RES_MODE);
+
+    uvTableInit();
 
     Serial.println("");
     Serial.println("Wi-Fi SSID " + String(WIFI_SSID));
@@ -121,12 +150,17 @@ float getHumidity()
 
 float getPressure()
 {
-    return bmp.readPressure() / 100.0F;
+    return bmp280.readPressure() / 100.0F;
 }
 
 float getAltitude()
 {
-    return bmp.readAltitude(1013.25);
+    return bmp280.readAltitude(1013.25);
+}
+
+float getBatteryVoltage()
+{
+    return maxBatteryVoltage * ((float)analogRead(0) / 1024.0);
 }
 
 int getBatteryLevel()
@@ -135,14 +169,78 @@ int getBatteryLevel()
     return round((((batteryVoltage - minBatteryVoltage) / (maxBatteryVoltage - minBatteryVoltage)) * 100));
 }
 
-float getBatteryVoltage()
-{
-    return maxBatteryVoltage * ((float)analogRead(0) / 1024.0);
-}
-
 bool getBatteryCharging()
 {
     return digitalRead(14) == HIGH;
+}
+
+void uvTableInit()
+{
+    for (uint32_t i = 0; i < VEML6070_UV_MAX_INDEX; i++)
+    {
+        uvRiskMap[i] = ((VEML6070_RSET_DEFAULT / VEML6070_TABLE_COEFFCIENT) / VEML6070_UV_MAX_DEFAULT) * (i + 1);
+    }
+}
+
+uint16_t getUvLevel()
+{
+    return veml6070.readUV();
+}
+
+UvRisk getUvRiskLevel(uint16_t uvLevel)
+{
+    float risk = 0;
+    int uvIndex = 0;
+    if (uvLevel < uvRiskMap[VEML6070_UV_MAX_INDEX - 1])
+    {
+        risk = (float)uvLevel / uvRiskMap[0];
+        if ((risk >= 0) && (risk <= 2.9))
+        {
+            uvIndex = UV_INDEX_1;
+        }
+        else if ((risk >= 3.0) && (risk <= 5.9))
+        {
+            uvIndex = UV_INDEX_2;
+        }
+        else if ((risk >= 6.0) && (risk <= 7.9))
+        {
+            uvIndex = UV_INDEX_3;
+        }
+        else if ((risk >= 8.0) && (risk <= 10.9))
+        {
+            uvIndex = UV_INDEX_4;
+        }
+        else if ((risk >= 11.0) && (risk <= 12.9))
+        {
+            uvIndex = UV_INDEX_5;
+        }
+        else if ((risk >= 13.0) && (risk <= 25.0))
+        {
+            uvIndex = UV_INDEX_6;
+        }
+        else
+        {
+            uvIndex = UV_INDEX_7;
+        }
+        return (UvRisk){risk, uvIndex};
+    }
+    else
+    {
+        risk = 99;
+        uvIndex = UV_INDEX_7;
+        return (UvRisk){risk, uvIndex};
+    }
+}
+
+float getUvPower(float uvRisk)
+{
+    float power = 0;
+    return (power = VEML6070_POWER_COEFFCIENT * uvRisk);
+}
+
+float getIlluminance()
+{
+    return bh1750.readLightLevel();
 }
 
 SensorsData getSensorsData()
@@ -155,11 +253,17 @@ SensorsData getSensorsData()
     float humidity = getHumidity();
     float pressure = getPressure();
     float altitude = getAltitude();
+    int uvLevel = getUvLevel();
+    UvRisk _uvRisk = getUvRiskLevel(uvLevel);
+    float uvRisk = _uvRisk.risk;
+    int uvIndex = _uvRisk.index;
+    float uvPower = getUvPower(uvRisk);
+    float illuminance = getIlluminance();
     float batteryVoltage = getBatteryVoltage();
     int batteryLevel = getBatteryLevel();
     bool batteryCharging = getBatteryCharging();
-    
-    SensorsData data = { mcu, cpuFrequency, ramUsageKb, ramUsagePercent, temperature, humidity, pressure, altitude, batteryVoltage, batteryLevel, batteryCharging };
+
+    SensorsData data = {mcu, cpuFrequency, ramUsageKb, ramUsagePercent, temperature, humidity, pressure, altitude, uvLevel, uvRisk, uvIndex, uvPower, illuminance, batteryVoltage, batteryLevel, batteryCharging};
 
     return data;
 }
@@ -177,6 +281,11 @@ DynamicJsonDocument getSensorsDataJson()
     json["humidity"] = data.humidity;
     json["pressure"] = data.pressure;
     json["altitude"] = data.altitude;
+    json["uvLevel"] = data.uvLevel;
+    json["uvRisk"] = data.uvRisk;
+    json["uvIndex"] = data.uvIndex;
+    json["uvPower"] = data.uvPower;
+    json["illuminance"] = data.illuminance;
     json["batteryVoltage"] = data.batteryVoltage;
     json["batteryLevel"] = data.batteryLevel;
     json["batteryCharging"] = data.batteryCharging;
@@ -209,7 +318,7 @@ void connectMqtt()
         {
             Serial.println("Unable connect to MQTT");
             delay(5000);
-            
+
             if (mqttConnectionAttempts == mqttConnectionAttemptsCount)
             {
                 deepSleep();
