@@ -41,7 +41,7 @@ export class MqttService implements OnModuleInit {
     });
 
     this.mqttClient.on('message', (topic, payload, packet) => {
-      if (packet.retain) {
+      if (!packet.retain) {
         this.logger.debug('Received data over MQTT');
 
         const payloadData = new SensorsDataMqttInput(
