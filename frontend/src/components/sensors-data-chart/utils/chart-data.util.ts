@@ -1,6 +1,6 @@
 import { ChartData } from 'chart.js';
 import { SensorsData } from '../../../services/sensors-data/sensors-data.model';
-import { formatNumberPrecission } from '../../../utils/formatter.util';
+import { formatNumberPrecission, formatUvPower } from '../../../utils/formatter.util';
 import { SensorType } from '../models/sensor-type.model';
 
 export const getLineChartData = (
@@ -31,6 +31,12 @@ export const getLineChartData = (
               return formatNumberPrecission(sd.humidity, 1);
             case SensorType.Pressure:
               return formatNumberPrecission(sd.pressure, 1);
+            case SensorType.UVIndex:
+              return sd.uvIndex;
+            case SensorType.UVPower:
+              return formatUvPower(sd.uvPower);
+            case SensorType.Illuminance:
+              return formatNumberPrecission(sd.illuminance, 0);
             case SensorType.BatteryVoltage:
               return formatNumberPrecission(sd.batteryVoltage, 2);
             case SensorType.BatteryLevel:

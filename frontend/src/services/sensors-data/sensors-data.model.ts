@@ -8,6 +8,11 @@ export interface SensorsData {
   humidity: number;
   pressure: number;
   altitude: number;
+  uvLevel: number;
+  uvRisk: number;
+  uvIndex: number;
+  uvPower: number;
+  illuminance: number;
   batteryVoltage: number;
   batteryLevel: number;
   batteryCharging: boolean;

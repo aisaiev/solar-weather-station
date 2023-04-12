@@ -4,7 +4,9 @@ import {
   booleanToYesNo,
   convertDateStringToKyivDateTimeString,
   formatNumberPrecission,
+  formatUvPower,
   getKyivLocalTimeString,
+  uvIndexToText,
 } from '../../utils/formatter.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
 
@@ -113,6 +115,39 @@ function SensorsDataTable() {
             <span aria-busy={isDataLoading}>
               {sensorsData && formatNumberPrecission(sensorsData?.pressure, 1)}{' '}
               {sensorsData && 'hPa'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-sun"></i> UV Index
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData && sensorsData.uvIndex}{' '}
+              <span>{sensorsData && uvIndexToText(sensorsData.uvRisk, sensorsData.uvIndex)}</span>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-sun-bright"></i> UV Power
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData && formatUvPower(sensorsData?.uvPower)}{' '}
+              {sensorsData && 'W/m²'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-brightness"></i> Illuminance
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData && formatNumberPrecission(sensorsData?.illuminance, 0)}{' '}
+              {sensorsData && 'lx'}
             </span>
           </td>
         </tr>

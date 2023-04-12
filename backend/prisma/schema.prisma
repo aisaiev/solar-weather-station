@@ -20,6 +20,11 @@ model SensorsData {
   humidity Float
   pressure Float
   altitude Float
+  uvLevel Int
+  uvRisk Float
+  uvIndex Int
+  uvPower Float
+  illuminance Float
   batteryVoltage Float
   batteryLevel Int
   batteryCharging Boolean
