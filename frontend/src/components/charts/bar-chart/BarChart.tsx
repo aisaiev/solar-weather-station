@@ -4,20 +4,31 @@ import {
   LinearScale,
   ChartData,
   BarElement,
+  ChartOptions,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { SensorType } from '../../sensors-data-chart/models/sensor-type.model';
 
-function BarChart({ data }: { data: ChartData<'bar'> }) {
+function BarChart({
+  data,
+  sensorType,
+}: {
+  data: ChartData<'bar'>;
+  sensorType: SensorType;
+}) {
   ChartJS.register(CategoryScale, LinearScale, BarElement);
 
-  const options = {
-    plugins: {
+  const options: ChartOptions = {
+    responsive: true,
+  };
+
+  if (sensorType === SensorType.BatteryCharging) {
+    options.plugins = {
       tooltip: {
         enabled: false,
       },
-    },
-    responsive: true,
-    scales: {
+    };
+    (options as any).scales = {
       y: {
         min: -1,
         max: 1,
@@ -35,8 +46,8 @@ function BarChart({ data }: { data: ChartData<'bar'> }) {
           },
         },
       },
-    },
-  } as any;
+    };
+  }
 
   return <Bar options={options} data={data} />;
 }

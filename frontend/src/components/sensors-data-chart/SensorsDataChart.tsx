@@ -111,9 +111,15 @@ function SensorsDataChart() {
       </div>
       <div className={isDataLoading ? 'chart-data-loading' : ''}>
         {sensorType !== SensorType.BatteryCharging ? (
-          <LinearChart data={chartData as ChartData<'line'>}></LinearChart>
+          <LinearChart
+            data={chartData as ChartData<'line'>}
+            sensorType={sensorType}
+          ></LinearChart>
         ) : (
-          <BarChart data={chartData as ChartData<'bar'>}></BarChart>
+          <BarChart
+            data={chartData as ChartData<'bar'>}
+            sensorType={sensorType}
+          ></BarChart>
         )}
       </div>
     </div>

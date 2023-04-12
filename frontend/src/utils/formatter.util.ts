@@ -31,7 +31,7 @@ export const convertDateStringToKyivTimeString = (
 };
 
 export const convertDateStringToKyivDateTimeString = (
-  value: string | undefined
+  value: string | undefined,
 ): string => {
   return (value ? new Date(value) : new Date()).toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -41,4 +41,32 @@ export const convertDateStringToKyivDateTimeString = (
     timeZone: 'Europe/Kiev',
     timeZoneName: 'short',
   });
+};
+
+export const uvIndexToText = (
+  uvRisk: number | undefined,
+  uvIndex: number | undefined,
+): string => {
+  if (uvRisk === undefined || uvIndex === undefined) return 'N/A';
+  if (uvRisk === 99) return 'Out of range';
+  if (uvIndex === 1) return 'Low';
+  if (uvIndex === 2) return 'Mid';
+  if (uvIndex === 3) return 'High';
+  if (uvIndex === 4) return 'Danger';
+  if (uvIndex === 5) return 'Burn level 1/2';
+  if (uvIndex === 6) return 'Burn level 3';
+  if (uvIndex === 7) return 'Extreme';
+  return 'Out of range';
+};
+
+export const formatUvPower = (value: number | undefined): number => {
+  if (!value) return 0;
+  const [valueIntPart, valueDecPart] = `${value}`.split('.');
+  if (!valueDecPart) return value;
+  let valueNewDecPart = '';
+  for (let i = 0; i < valueDecPart.length; i++) {
+    valueNewDecPart += valueDecPart[i];
+    if (`${+valueNewDecPart}`.length === 3) break;
+  }
+  return +`${valueIntPart}.${valueNewDecPart}`;
 };
