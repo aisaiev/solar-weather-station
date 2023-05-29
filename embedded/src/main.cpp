@@ -37,10 +37,18 @@ void initMqttServer();
 void connectMqtt();
 void uvTableInit();
 void publishSensorsData();
+void manageRelay();
+void turnOnRelay();
+void turnOffRelay();
 void deepSleep();
 
 const int wifiConnectionAttemptsCount = 5;
 const int mqttConnectionAttemptsCount = 5;
+const int measureInterval = 600000; // 10 minutes
+long lastMeasureTime = 0;
+float temperature = 0;
+float temperatureThreshold = 40;
+bool isFirstRun = true;
 
 const int totalEspRam = 81920;
 const float minBatteryVoltage = 2.8;
@@ -61,6 +69,7 @@ void setup()
     sht31.begin(SHT_SENSOR_I2C_ADDRESS);
     veml6070.begin(VEML6070_4_T);
     bh1750.begin(BH1750::ONE_TIME_HIGH_RES_MODE);
+    pinMode(RELAY_PIN, OUTPUT);
 
     uvTableInit();
 
@@ -101,14 +110,28 @@ void loop()
     {
         connectMqtt();
     }
-    mqttClient.loop();
 
-    deepSleep();
+    if (isFirstRun)
+    {
+        publishSensorsData();
+        mqttClient.loop();
+        manageRelay();
+        isFirstRun = false;
+    }
+    
+    long currentTime = millis();
+    if (currentTime - lastMeasureTime > measureInterval)
+    {
+        lastMeasureTime = currentTime;
+
+        publishSensorsData();
+        mqttClient.loop();
+        manageRelay();
+    }
 }
 
 void deepSleep()
 {
-    Serial.println("");
     Serial.println("Going to deep sleep");
     ESP.deepSleep(SLEEP_DURATION);
 }
@@ -293,6 +316,31 @@ DynamicJsonDocument getSensorsDataJson()
     return json;
 }
 
+void turnOnRelay()
+{
+    Serial.println("Turning on relay");
+    digitalWrite(RELAY_PIN, HIGH);
+}
+
+void turnOffRelay()
+{
+    Serial.println("Turning off relay");
+    digitalWrite(RELAY_PIN, LOW);
+}
+
+void manageRelay()
+{
+    if (temperature > temperatureThreshold)
+    {
+        turnOnRelay();
+    }
+    else
+    {
+        turnOffRelay();
+        deepSleep();
+    }
+}
+
 //=====================
 // MQTT
 //=====================
@@ -310,9 +358,7 @@ void connectMqtt()
         Serial.println("Connecting to MQTT broker...");
         if (mqttClient.connect(MQTT_CLIENT_ID))
         {
-            Serial.println("MQTT Connected");
-            publishSensorsData();
-            Serial.println("MQTT data has been sent");
+            Serial.println("Connected to MQTT broker");
         }
         else
         {
@@ -331,6 +377,9 @@ void connectMqtt()
 void publishSensorsData()
 {
     String payload;
-    serializeJson(getSensorsDataJson(), payload);
+    DynamicJsonDocument json = getSensorsDataJson();
+    temperature = json["temperature"];
+    serializeJson(json, payload);
     mqttClient.publish(MQTT_TOPIC, payload.c_str(), false);
+    Serial.println("MQTT data has been sent");
 }
