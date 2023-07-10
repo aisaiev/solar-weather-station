@@ -41,6 +41,9 @@ export class SensorsDataMqttInput {
   illuminance: number;
 
   @IsNumber()
+  rainAnalog: number;
+
+  @IsNumber()
   batteryVoltage: number;
 
   @IsNumber()
@@ -63,6 +66,7 @@ export class SensorsDataMqttInput {
     uvIndex: number;
     uvPower: number;
     illuminance: number;
+    rainAnalog: number;
     batteryVoltage: number;
     batteryLevel: number;
     batteryCharging: boolean;
@@ -80,6 +84,7 @@ export class SensorsDataMqttInput {
     this.uvIndex = data.uvIndex;
     this.uvPower = data.uvPower;
     this.illuminance = data.illuminance;
+    this.rainAnalog = data.rainAnalog;
     this.batteryVoltage = data.batteryVoltage;
     this.batteryLevel = data.batteryLevel;
     this.batteryCharging = data.batteryCharging;

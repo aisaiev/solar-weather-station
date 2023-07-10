@@ -13,6 +13,7 @@ export interface SensorsData {
   uvIndex: number;
   uvPower: number;
   illuminance: number;
+  rainAnalog: number;
   batteryVoltage: number;
   batteryLevel: number;
   batteryCharging: boolean;

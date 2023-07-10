@@ -25,6 +25,7 @@ model SensorsData {
   uvIndex Int
   uvPower Float
   illuminance Float
+  rainAnalog Int
   batteryVoltage Float
   batteryLevel Int
   batteryCharging Boolean
