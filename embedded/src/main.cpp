@@ -9,14 +9,18 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_VEML6070.h>
 #include <BH1750.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h>
+#include <LittleFS.h>
 #include "sensors_data.cpp"
 #include "constants.h"
 
 #define VEML6070_RSET_DEFAULT 270000
 #define VEML6070_UV_MAX_INDEX 15
 #define VEML6070_UV_MAX_DEFAULT 11
-#define VEML6070_POWER_COEFFCIENT 0.025
-#define VEML6070_TABLE_COEFFCIENT 32.86270591
+#define VEML6070_POWER_COEFFCIENT 0.025f
+#define VEML6070_TABLE_COEFFCIENT 32.86270591f
 #define UV_INDEX_1 1 // sun->fun
 #define UV_INDEX_2 2 // sun->glases advised
 #define UV_INDEX_3 3 // sun->glases a must
@@ -30,9 +34,11 @@ Adafruit_BMP280 bmp280;
 Adafruit_SHT31 sht31 = Adafruit_SHT31();
 Adafruit_VEML6070 veml6070 = Adafruit_VEML6070();
 
+AsyncWebServer server(80);
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+void initWebServer();
 void initMqttServer();
 void connectMqtt();
 void uvTableInit();
@@ -41,14 +47,21 @@ void manageRelay();
 void turnOnRelay();
 void turnOffRelay();
 void deepSleep();
+void deepSleepWithDelay();
+int readMux(int channel);
 
 const int wifiConnectionAttemptsCount = 5;
 const int mqttConnectionAttemptsCount = 5;
 const int measureInterval = 600000; // 10 minutes
 long lastMeasureTime = 0;
 float temperature = 0;
-float temperatureThreshold = 40;
+const float temperatureThreshold = 40;
 bool isFirstRun = true;
+bool keepAlive = false;
+bool restartEsp = false;
+bool performDeepSleepWithDelay = false;
+long deepSleepWithDelayStartTime = 0;
+const int deepSleepWithDelayDuration = 5000;
 
 const int totalEspRam = 81920;
 const float minBatteryVoltage = 2.8;
@@ -63,13 +76,19 @@ struct UvRisk
 void setup()
 {
     Serial.begin(SERIAL_BAUD);
+    LittleFS.begin();
     Wire.begin();
 
     bmp280.begin(BMP_SENSOR_I2C_ADDRESS);
     sht31.begin(SHT_SENSOR_I2C_ADDRESS);
     veml6070.begin(VEML6070_4_T);
     bh1750.begin(BH1750::ONE_TIME_HIGH_RES_MODE);
+    initWebServer();
     pinMode(RELAY_PIN, OUTPUT);
+    pinMode(MUX_PIN_S0, OUTPUT);
+    pinMode(MUX_PIN_S1, OUTPUT);
+    pinMode(MUX_PIN_S2, OUTPUT);
+    pinMode(MUX_PIN_S3, OUTPUT);
 
     uvTableInit();
 
@@ -110,6 +129,7 @@ void loop()
     {
         connectMqtt();
     }
+    mqttClient.loop();
 
     if (isFirstRun)
     {
@@ -127,6 +147,25 @@ void loop()
         publishSensorsData();
         mqttClient.loop();
         manageRelay();
+    }
+
+    if (performDeepSleepWithDelay)
+    {
+        deepSleepWithDelay();
+    }
+
+    if (restartEsp)
+    {
+        ESP.restart();
+    }
+}
+
+void deepSleepWithDelay()
+{
+    long currentTime = millis();
+    if (currentTime - deepSleepWithDelayStartTime > deepSleepWithDelayDuration)
+    {
+        deepSleep();
     }
 }
 
@@ -183,12 +222,12 @@ float getAltitude()
 
 float getBatteryVoltage()
 {
-    return maxBatteryVoltage * ((float)analogRead(0) / 1024.0);
+    int value = readMux(0);
+    return maxBatteryVoltage * ((float)value / 1024.0);
 }
 
-int getBatteryLevel()
+int getBatteryLevel(float batteryVoltage)
 {
-    float batteryVoltage = getBatteryVoltage();
     return round((((batteryVoltage - minBatteryVoltage) / (maxBatteryVoltage - minBatteryVoltage)) * 100));
 }
 
@@ -207,7 +246,10 @@ void uvTableInit()
 
 uint16_t getUvLevel()
 {
-    return veml6070.readUV();
+    veml6070.sleep(false);
+    uint16_t value = veml6070.readUV();
+    veml6070.sleep(true);
+    return value;
 }
 
 UvRisk getUvRiskLevel(uint16_t uvLevel)
@@ -266,6 +308,41 @@ float getIlluminance()
     return bh1750.readLightLevel();
 }
 
+int getRainAnalog()
+{
+    return readMux(1);
+}
+
+int readMux(int channel)
+{
+    int controlPin[] = {MUX_PIN_S0, MUX_PIN_S1, MUX_PIN_S2, MUX_PIN_S3};
+
+    int muxChannel[16][4] = {
+        {0, 0, 0, 0},
+        {1, 0, 0, 0},
+        {0, 1, 0, 0},
+        {1, 1, 0, 0},
+        {0, 0, 1, 0},
+        {1, 0, 1, 0},
+        {0, 1, 1, 0},
+        {1, 1, 1, 0},
+        {0, 0, 0, 1},
+        {1, 0, 0, 1},
+        {0, 1, 0, 1},
+        {1, 1, 0, 1},
+        {0, 0, 1, 1},
+        {1, 0, 1, 1},
+        {0, 1, 1, 1},
+        {1, 1, 1, 1}};
+
+    for (int i = 0; i < 4; i++)
+    {
+        digitalWrite(controlPin[i], muxChannel[channel][i]);
+    }
+
+    return analogRead(A0);
+}
+
 SensorsData getSensorsData()
 {
     String mcu = getMcuName();
@@ -282,11 +359,12 @@ SensorsData getSensorsData()
     int uvIndex = _uvRisk.index;
     float uvPower = getUvPower(uvRisk);
     float illuminance = getIlluminance();
+    int rainAnalog = getRainAnalog();
     float batteryVoltage = getBatteryVoltage();
-    int batteryLevel = getBatteryLevel();
+    int batteryLevel = getBatteryLevel(batteryVoltage);
     bool batteryCharging = getBatteryCharging();
 
-    SensorsData data = {mcu, cpuFrequency, ramUsageKb, ramUsagePercent, temperature, humidity, pressure, altitude, uvLevel, uvRisk, uvIndex, uvPower, illuminance, batteryVoltage, batteryLevel, batteryCharging};
+    SensorsData data = {mcu, cpuFrequency, ramUsageKb, ramUsagePercent, temperature, humidity, pressure, altitude, uvLevel, uvRisk, uvIndex, uvPower, illuminance, rainAnalog, batteryVoltage, batteryLevel, batteryCharging};
 
     return data;
 }
@@ -309,6 +387,7 @@ DynamicJsonDocument getSensorsDataJson()
     json["uvIndex"] = data.uvIndex;
     json["uvPower"] = data.uvPower;
     json["illuminance"] = data.illuminance;
+    json["rainAnalog"] = data.rainAnalog;
     json["batteryVoltage"] = data.batteryVoltage;
     json["batteryLevel"] = data.batteryLevel;
     json["batteryCharging"] = data.batteryCharging;
@@ -337,7 +416,11 @@ void manageRelay()
     else
     {
         turnOffRelay();
-        deepSleep();
+        if (!keepAlive)
+        {
+            performDeepSleepWithDelay = true;
+            deepSleepWithDelayStartTime = millis();
+        }
     }
 }
 
@@ -348,6 +431,22 @@ void initMqttServer()
 {
     mqttClient.setBufferSize(512);
     mqttClient.setServer(MQTT_HOST, MQTT_PORT);
+    mqttClient.setCallback([](char *topic, byte *payload, unsigned int length) {
+        if (strcmp(topic, MQTT_KEEP_ALIVE_TOPIC) == 0)
+        {
+            if (length == 1)
+            {
+                if ((char)payload[0] == '1')
+                {
+                    keepAlive = true;
+                }
+                else if ((char)payload[0] == '0')
+                {
+                    keepAlive = false;
+                }
+            }
+        }
+    });
 }
 
 void connectMqtt()
@@ -358,6 +457,7 @@ void connectMqtt()
         Serial.println("Connecting to MQTT broker...");
         if (mqttClient.connect(MQTT_CLIENT_ID))
         {
+            mqttClient.subscribe(MQTT_KEEP_ALIVE_TOPIC);
             Serial.println("Connected to MQTT broker");
         }
         else
@@ -382,4 +482,69 @@ void publishSensorsData()
     serializeJson(json, payload);
     mqttClient.publish(MQTT_TOPIC, payload.c_str(), false);
     Serial.println("MQTT data has been sent");
+}
+
+//=====================
+// STATE
+//=====================
+DynamicJsonDocument getStateJson()
+{
+    DynamicJsonDocument json(32);
+    json["isRelayOn"] = digitalRead(RELAY_PIN) == HIGH;
+    return json;
+}
+
+//=====================
+// SERVER
+//=====================
+
+void initWebServer()
+{
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+
+    server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        DynamicJsonDocument json = getStateJson();
+        serializeJson(json, *response);
+        request->send(response);
+    });
+
+    server.on("/api/relay/on", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+    {
+        turnOnRelay();
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        StaticJsonDocument<16> respJson;
+        respJson["status"] = "ok";
+        serializeJson(respJson, *response);
+        request->send(response);
+    });
+
+    server.on("/api/relay/off", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+    {
+        turnOffRelay();
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        StaticJsonDocument<16> respJson;
+        respJson["status"] = "ok";
+        serializeJson(respJson, *response);
+        request->send(response);
+    });
+
+    server.on("/api/restart", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+    {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        StaticJsonDocument<16> respJson;
+        respJson["status"] = "ok";
+        serializeJson(respJson, *response);
+        request->send(response);
+        restartEsp = true;
+    });
+
+    server.onNotFound([](AsyncWebServerRequest *request)
+    {
+        request->redirect("/");
+    });
+
+    AsyncElegantOTA.begin(&server);
+    server.begin();
 }

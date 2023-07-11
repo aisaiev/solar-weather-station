@@ -15,6 +15,7 @@ struct SensorsData
     int uvIndex;
     float uvPower;
     float illuminance;
+    int rainAnalog;
     float batteryVoltage;
     int batteryLevel;
     bool batteryCharging;
