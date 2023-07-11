@@ -5,6 +5,7 @@ export enum SensorType {
   UVIndex = 'UV Index',
   UVPower = 'UV Power',
   Illuminance = 'Illuminance',
+  Rain = 'Rain',
   BatteryVoltage = 'Battery Voltage',
   BatteryLevel = 'Battery Level',
   BatteryCharging = 'Battery Charging',

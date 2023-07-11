@@ -37,6 +37,8 @@ export const getLineChartData = (
               return formatUvPower(sd.uvPower);
             case SensorType.Illuminance:
               return formatNumberPrecission(sd.illuminance, 0);
+            case SensorType.Rain:
+              return sd.rainAnalog;
             case SensorType.BatteryVoltage:
               return formatNumberPrecission(sd.batteryVoltage, 2);
             case SensorType.BatteryLevel:

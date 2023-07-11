@@ -153,6 +153,16 @@ function SensorsDataTable() {
         </tr>
         <tr>
           <td className="white-space-nowrap">
+            <i className="fa-solid fa-raindrops"></i> Rain
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData && sensorsData?.rainAnalog}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
             <i className="fa-solid fa-bolt"></i> Battery voltage
           </td>
           <td>
