@@ -15,8 +15,20 @@
     <main class="container">
         <h3 class="text-align-center">Solar Weather Station</h3>
         <article>
-            <button type="button" id="relay" class="secondary" onclick="switchRelay()">Turn On Relay</button>
-            <button type="button" id="restart" class="secondary" onclick="restart()">Restart</button>
+            <section>
+                <button type="button" id="relay" class="secondary" onclick="switchRelay()">Turn On Relay</button>
+            </section>
+            <form>
+                <section>
+                    <h5 class="text-align-center">Config</h5>
+                    <label for="temperature-threshold">Temperature threshold</label>
+                    <input type="number" id="temperature-threshold" name="temperature-threshold">
+                </section>
+                <button type="submit" id="save">Save</button>
+            </form>
+            <section>
+                <button type="button" id="restart" class="secondary" onclick="restart()">Restart</button>
+            </section>
         </article>
     </main>
 </body>

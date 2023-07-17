@@ -15,6 +15,7 @@
 #include <LittleFS.h>
 #include "sensors_data.cpp"
 #include "constants.h"
+#include "Config.cpp"
 
 #define VEML6070_RSET_DEFAULT 270000
 #define VEML6070_UV_MAX_INDEX 15
@@ -38,6 +39,11 @@ AsyncWebServer server(80);
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
+Config config;
+
+DynamicJsonDocument getConfigJson();
+Config getConfig();
+void saveConfig(DynamicJsonDocument json);
 void initWebServer();
 void initMqttServer();
 void connectMqtt();
@@ -55,7 +61,6 @@ const int mqttConnectionAttemptsCount = 5;
 const int measureInterval = 600000; // 10 minutes
 long lastMeasureTime = 0;
 float temperature = 0;
-const float temperatureThreshold = 40;
 bool isFirstRun = true;
 bool keepAlive = false;
 bool restartEsp = false;
@@ -78,6 +83,8 @@ void setup()
     Serial.begin(SERIAL_BAUD);
     LittleFS.begin();
     Wire.begin();
+
+    config = getConfig();
 
     bmp280.begin(BMP_SENSOR_I2C_ADDRESS);
     sht31.begin(SHT_SENSOR_I2C_ADDRESS);
@@ -178,6 +185,7 @@ void deepSleep()
 //=====================
 // SENSORS
 //=====================
+
 String getMcuName()
 {
     return "ESP8266EX";
@@ -409,7 +417,7 @@ void turnOffRelay()
 
 void manageRelay()
 {
-    if (temperature > temperatureThreshold)
+    if (temperature > config.temperatureThreshold)
     {
         turnOnRelay();
     }
@@ -427,6 +435,7 @@ void manageRelay()
 //=====================
 // MQTT
 //=====================
+
 void initMqttServer()
 {
     mqttClient.setBufferSize(512);
@@ -487,6 +496,7 @@ void publishSensorsData()
 //=====================
 // STATE
 //=====================
+
 DynamicJsonDocument getStateJson()
 {
     DynamicJsonDocument json(32);
@@ -530,6 +540,27 @@ void initWebServer()
         request->send(response);
     });
 
+    server.on("/api/config", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        DynamicJsonDocument json = getConfigJson();
+        serializeJson(json, *response);
+        request->send(response);
+    });
+
+    server.on("/api/config", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+    {
+        DynamicJsonDocument json(512);
+        deserializeJson(json, data);
+        saveConfig(json);
+
+        AsyncResponseStream *response = request->beginResponseStream("application/json");
+        StaticJsonDocument<16> respJson;
+        respJson["status"] = "ok";
+        serializeJson(respJson, *response);
+        request->send(response);
+    });
+
     server.on("/api/restart", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
     {
         AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -547,4 +578,31 @@ void initWebServer()
 
     AsyncElegantOTA.begin(&server);
     server.begin();
+}
+
+//=====================
+// CONFIG
+//=====================
+
+DynamicJsonDocument getConfigJson()
+{
+  File configFile = LittleFS.open("/config.json", "r");
+  DynamicJsonDocument json(512);
+  deserializeJson(json, configFile);
+  return json;
+}
+
+Config getConfig()
+{
+  File configFile = LittleFS.open("/config.json", "r");
+  DynamicJsonDocument json(512);
+  deserializeJson(json, configFile);
+  Config config = { json["temperatureThreshold"] };
+  return config;
+}
+
+void saveConfig(DynamicJsonDocument json)
+{
+  File configFile = LittleFS.open("/config.json", "w");
+  serializeJson(json, configFile);
 }
