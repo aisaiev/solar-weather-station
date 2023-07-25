@@ -58,7 +58,7 @@ int readMux(int channel);
 
 const int wifiConnectionAttemptsCount = 5;
 const int mqttConnectionAttemptsCount = 5;
-const int measureInterval = 600000; // 10 minutes
+const int measureInterval = 300000; // 5 minutes
 long lastMeasureTime = 0;
 float temperature = 0;
 bool isFirstRun = true;
