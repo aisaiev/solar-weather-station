@@ -5,17 +5,12 @@ export interface SensorsData {
   ramUsageKb: number;
   ramUsagePercent: number;
   temperature: number;
+  internalTemperature: number;
   humidity: number;
+  internalHumidity: number;
   pressure: number;
-  altitude: number;
-  uvLevel: number;
-  uvRisk: number;
-  uvIndex: number;
-  uvPower: number;
   illuminance: number;
-  rainAnalog: number;
   batteryVoltage: number;
   batteryLevel: number;
-  batteryCharging: boolean;
   date: string;
 }

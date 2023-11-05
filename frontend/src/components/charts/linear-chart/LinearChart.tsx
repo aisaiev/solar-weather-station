@@ -7,11 +7,9 @@ import {
   Tooltip,
   ChartData,
   ChartOptions,
-  TooltipItem,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import zoomPlugin from 'chartjs-plugin-zoom';
-import { formatUvPower } from '../../../utils/formatter.util';
 import { SensorType } from '../../sensors-data-chart/models/sensor-type.model';
 
 function LinearChart({
@@ -51,16 +49,6 @@ function LinearChart({
     },
     responsive: true,
   };
-
-  if (sensorType === SensorType.UVPower) {
-    options.plugins!.tooltip = {
-      callbacks: {
-        label: function (context: TooltipItem<'line'>) {
-          return `${formatUvPower(context.raw as number)}`;
-        },
-      },
-    };
-  }
 
   return <Line options={options} data={data} />;
 }

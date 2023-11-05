@@ -1,12 +1,10 @@
 export enum SensorType {
   Temperature = 'Temperature',
   Humidity = 'Humidity',
+  InternalTemperature = 'Internal Temperature',
+  InternalHumidity = 'Internal Humidity',
   Pressure = 'Pressure',
-  UVIndex = 'UV Index',
-  UVPower = 'UV Power',
   Illuminance = 'Illuminance',
-  Rain = 'Rain',
   BatteryVoltage = 'Battery Voltage',
   BatteryLevel = 'Battery Level',
-  BatteryCharging = 'Battery Charging',
 }

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { SensorsData } from '../../services/sensors-data/sensors-data.model';
 import {
-  booleanToYesNo,
   convertDateStringToKyivDateTimeString,
   formatNumberPrecission,
-  formatUvPower,
   getKyivLocalTimeString,
-  uvIndexToText,
 } from '../../utils/formatter.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
 
@@ -120,28 +117,6 @@ function SensorsDataTable() {
         </tr>
         <tr>
           <td className="white-space-nowrap">
-            <i className="fa-solid fa-sun"></i> UV Index
-          </td>
-          <td>
-            <span aria-busy={isDataLoading}>
-              {sensorsData && sensorsData.uvIndex}{' '}
-              <span>{sensorsData && uvIndexToText(sensorsData.uvRisk, sensorsData.uvIndex)}</span>
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td className="white-space-nowrap">
-            <i className="fa-solid fa-sun-bright"></i> UV Power
-          </td>
-          <td>
-            <span aria-busy={isDataLoading}>
-              {sensorsData && formatUvPower(sensorsData?.uvPower)}{' '}
-              {sensorsData && 'W/m²'}
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td className="white-space-nowrap">
             <i className="fa-solid fa-brightness"></i> Illuminance
           </td>
           <td>
@@ -153,11 +128,24 @@ function SensorsDataTable() {
         </tr>
         <tr>
           <td className="white-space-nowrap">
-            <i className="fa-solid fa-raindrops"></i> Rain
+            <i className="fa-solid fa-temperature-empty"></i> Internal Temperature
           </td>
           <td>
             <span aria-busy={isDataLoading}>
-              {sensorsData && sensorsData?.rainAnalog}
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.internalTemperature, 1)}{' '}
+              {sensorsData && '°C'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-droplet"></i> Internal Humidity
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData && formatNumberPrecission(sensorsData?.internalHumidity, 1)}{' '}
+              {sensorsData && '%'}
             </span>
           </td>
         </tr>
@@ -182,16 +170,6 @@ function SensorsDataTable() {
               {sensorsData &&
                 formatNumberPrecission(sensorsData?.batteryLevel, 0)}{' '}
               {sensorsData && '%'}
-            </span>
-          </td>
-        </tr>
-        <tr>
-          <td className="white-space-nowrap">
-            <i className="fa-solid fa-solar-panel"></i> Battery charging
-          </td>
-          <td>
-            <span aria-busy={isDataLoading}>
-              {sensorsData && booleanToYesNo(sensorsData?.batteryCharging)}
             </span>
           </td>
         </tr>

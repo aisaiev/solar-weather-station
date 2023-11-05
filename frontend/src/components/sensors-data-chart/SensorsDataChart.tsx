@@ -3,10 +3,9 @@ import { ChartData } from 'chart.js';
 import { SensorDataPeriod } from './models/sensor-data-period.model';
 import { SensorType } from './models/sensor-type.model';
 import { SensorsData } from '../../services/sensors-data/sensors-data.model';
-import { getBarChartData, getLineChartData } from './utils/chart-data.util';
+import { getLineChartData } from './utils/chart-data.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
 import LinearChart from '../charts/linear-chart/LinearChart';
-import BarChart from '../charts/bar-chart/BarChart';
 import './SensorsDataChart.css';
 
 function SensorsDataChart() {
@@ -26,10 +25,7 @@ function SensorsDataChart() {
 
   useEffect(() => {
     const prepareChartData = (sensorsData: SensorsData[]): void => {
-      const data =
-        sensorType !== SensorType.BatteryCharging
-          ? getLineChartData(sensorType, sensorsData)
-          : getBarChartData(sensorType, sensorsData);
+      const data = getLineChartData(sensorType, sensorsData);
       setChartData(data);
     };
 
@@ -110,17 +106,10 @@ function SensorsDataChart() {
         </div>
       </div>
       <div className={isDataLoading ? 'chart-data-loading' : ''}>
-        {sensorType !== SensorType.BatteryCharging ? (
-          <LinearChart
-            data={chartData as ChartData<'line'>}
-            sensorType={sensorType}
-          ></LinearChart>
-        ) : (
-          <BarChart
-            data={chartData as ChartData<'bar'>}
-            sensorType={sensorType}
-          ></BarChart>
-        )}
+        <LinearChart
+          data={chartData as ChartData<'line'>}
+          sensorType={sensorType}
+        ></LinearChart>
       </div>
     </div>
   );
