@@ -14,6 +14,7 @@
 #include <AsyncElegantOTA.h>
 #include <LittleFS.h>
 #include "sensors_data.cpp"
+#include "secrets.h"
 #include "constants.h"
 #include "Config.cpp"
 
@@ -58,7 +59,7 @@ int readMux(int channel);
 
 const int wifiConnectionAttemptsCount = 5;
 const int mqttConnectionAttemptsCount = 5;
-const int measureInterval = 300000; // 5 minutes
+const int measureInterval = 600000; // 10 minutes
 long lastMeasureTime = 0;
 float temperature = 0;
 bool isFirstRun = true;
@@ -230,7 +231,7 @@ float getAltitude()
 
 float getBatteryVoltage()
 {
-    int value = readMux(0);
+    int value = readMux(0) * 1.0022;
     return maxBatteryVoltage * ((float)value / 1024.0);
 }
 
@@ -510,7 +511,7 @@ DynamicJsonDocument getStateJson()
 
 void initWebServer()
 {
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html").setCacheControl("max-age=600");
 
     server.on("/api/state", HTTP_GET, [](AsyncWebServerRequest *request)
     {

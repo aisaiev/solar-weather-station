@@ -1,0 +1,17 @@
+#define MCU_NAME "ESP32-S3"
+#define CPU_FREQUENCY 240
+#define TOTAL_ESP_RAM 520000
+#define SDA_PIN 1
+#define SCL_PIN 2
+#define OPTOCOUPLER_PIN 5
+#define DEEP_SLEEP_SECONDS 300
+#define DEEP_SLEEP_DELAY_MILLISECONDS 2000
+#define PUBLISH_WEATHER_DATA_DELAY_MILLISECONDS 5000
+#define WIFI_CONNECTION_ATTEMPT_COUNT 30
+#define MQTT_CONNECTION_ATTEMPT_COUNT 30
+#define BATTERY_ANALOG_PIN 4
+#define MQTT_HOST "192.168.1.8"
+#define MQTT_PORT 1883
+#define MQTT_CLIENT_ID "ESP32_Solar_Weather_Station"
+#define MQTT_TOPIC "esp32-solar-weather-station/sensors"
+#define MQTT_KEEP_ALIVE_TOPIC "esp32-solar-weather-station/keep-alive"
