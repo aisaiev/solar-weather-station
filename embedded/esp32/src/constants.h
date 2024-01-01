@@ -10,7 +10,7 @@
 #define WIFI_CONNECTION_ATTEMPT_COUNT 30
 #define MQTT_CONNECTION_ATTEMPT_COUNT 30
 #define BATTERY_ANALOG_PIN 4
-#define MQTT_HOST "192.168.1.8"
+#define MQTT_HOST "192.168.1.3"
 #define MQTT_PORT 1883
 #define MQTT_CLIENT_ID "ESP32_Solar_Weather_Station"
 #define MQTT_TOPIC "esp32-solar-weather-station/sensors"

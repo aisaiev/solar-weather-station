@@ -7,7 +7,7 @@
 #define MUX_PIN_S1 D4
 #define MUX_PIN_S2 D7
 #define MUX_PIN_S3 D8
-#define MQTT_HOST "192.168.1.8"
+#define MQTT_HOST "192.168.1.3"
 #define MQTT_PORT 1883
 #define MQTT_CLIENT_ID "ESP8266_Solar_Weather_Station"
 #define MQTT_TOPIC "esp8266-solar-weather-station/sensors"
