@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
 import { SensorsData } from '@prisma/client';
 import { SensorsDataService } from '../service/sensors-data.service';
+import { SensorType } from '../models/sensor-type.enum';
 
 @Controller('sensors-data')
 export class SensorsDataController {
@@ -12,17 +13,32 @@ export class SensorsDataController {
   }
 
   @Get('day')
-  async getSensorsDataForDay(): Promise<SensorsData[]> {
-    return this.sensorsDataService.getSensorsDataForDay();
+  async getSensorsDataForDay(
+    @Query('sensorType') sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
+    if (sensorType && !Object.values(SensorType).includes(sensorType)) {
+      throw new BadRequestException('Invalid sensor type');
+    }
+    return this.sensorsDataService.getSensorsDataForDay(sensorType);
   }
 
   @Get('week')
-  async getSensorsDataForWeek(): Promise<SensorsData[]> {
-    return this.sensorsDataService.getSensorsDataForWeek();
+  async getSensorsDataForWeek(
+    @Query('sensorType') sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
+    if (sensorType && !Object.values(SensorType).includes(sensorType)) {
+      throw new BadRequestException('Invalid sensor type');
+    }
+    return this.sensorsDataService.getSensorsDataForWeek(sensorType);
   }
 
   @Get('month')
-  async getSensorsDataForMonth(): Promise<SensorsData[]> {
-    return this.sensorsDataService.getSensorsDataForMonth();
+  async getSensorsDataForMonth(
+    @Query('sensorType') sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
+    if (sensorType && !Object.values(SensorType).includes(sensorType)) {
+      throw new BadRequestException('Invalid sensor type');
+    }
+    return this.sensorsDataService.getSensorsDataForMonth(sensorType);
   }
 }

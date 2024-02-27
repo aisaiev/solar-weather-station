@@ -1,6 +1,8 @@
+import { SensorType } from '../../components/sensors-data-chart/models/sensor-type.model';
 import { SERVER_API_URL } from '../../constants/constants';
 import { httpClient } from '../http-client';
 import { SensorsData } from './sensors-data.model';
+import { SensorsDataUtil } from './sensors-data.util';
 
 class SensorsDataService {
   private readonly resourceUrl = SERVER_API_URL + '/sensors-data';
@@ -9,16 +11,31 @@ class SensorsDataService {
     return httpClient.get<SensorsData>(`${this.resourceUrl}/latest`);
   }
 
-  getDataForDay() {
-    return httpClient.get<SensorsData[]>(`${this.resourceUrl}/day`);
+  getDataForDay(sensorType: SensorType) {
+    const url = new URL(`${this.resourceUrl}/day`);
+    url.searchParams.append(
+      'sensorType',
+      SensorsDataUtil.convertUiSensorTypeToApiSensorType(sensorType),
+    );
+    return httpClient.get<Record<string, number>[]>(url.toString());
   }
 
-  getDataForWeek() {
-    return httpClient.get<SensorsData[]>(`${this.resourceUrl}/week`);
+  getDataForWeek(sensorType: SensorType) {
+    const url = new URL(`${this.resourceUrl}/week`);
+    url.searchParams.append(
+      'sensorType',
+      SensorsDataUtil.convertUiSensorTypeToApiSensorType(sensorType),
+    );
+    return httpClient.get<Record<string, number>[]>(url.toString());
   }
 
-  getDataForMonth() {
-    return httpClient.get<SensorsData[]>(`${this.resourceUrl}/month`);
+  getDataForMonth(sensorType: SensorType) {
+    const url = new URL(`${this.resourceUrl}/month`);
+    url.searchParams.append(
+      'sensorType',
+      SensorsDataUtil.convertUiSensorTypeToApiSensorType(sensorType),
+    );
+    return httpClient.get<Record<string, number>[]>(url.toString());
   }
 }
 

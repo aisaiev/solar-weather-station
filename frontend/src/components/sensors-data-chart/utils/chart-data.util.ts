@@ -1,11 +1,10 @@
 import { ChartData } from 'chart.js';
-import { SensorsData } from '../../../services/sensors-data/sensors-data.model';
 import { formatNumberPrecission } from '../../../utils/formatter.util';
 import { SensorType } from '../models/sensor-type.model';
 
 export const getLineChartData = (
   sensorType: SensorType,
-  sensorsData: SensorsData[],
+  sensorsData: Record<string, number>[],
 ): ChartData<'line'> => {
   return {
     labels: sensorsData.map((sd) => {

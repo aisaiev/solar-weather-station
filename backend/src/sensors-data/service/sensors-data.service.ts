@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, SensorsData } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma/prisma.service';
+import { SensorType } from '../models/sensor-type.enum';
 
 @Injectable()
 export class SensorsDataService {
@@ -16,8 +17,16 @@ export class SensorsDataService {
     });
   }
 
-  async getSensorsDataForDay(): Promise<SensorsData[]> {
+  async getSensorsDataForDay(
+    sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
     return this.prismaService.sensorsData.findMany({
+      select: sensorType
+        ? {
+            [sensorType]: true,
+            date: true,
+          }
+        : undefined,
       where: {
         date: {
           gte: new Date(new Date().setDate(new Date().getDate() - 1)),
@@ -28,8 +37,16 @@ export class SensorsDataService {
     });
   }
 
-  async getSensorsDataForWeek(): Promise<SensorsData[]> {
+  async getSensorsDataForWeek(
+    sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
     return this.prismaService.sensorsData.findMany({
+      select: sensorType
+        ? {
+            [sensorType]: true,
+            date: true,
+          }
+        : undefined,
       where: {
         date: {
           gte: new Date(new Date().setDate(new Date().getDate() - 7)),
@@ -40,8 +57,16 @@ export class SensorsDataService {
     });
   }
 
-  async getSensorsDataForMonth(): Promise<SensorsData[]> {
+  async getSensorsDataForMonth(
+    sensorType: SensorType,
+  ): Promise<Record<string, number>[]> {
     return this.prismaService.sensorsData.findMany({
+      select: sensorType
+        ? {
+            [sensorType]: true,
+            date: true,
+          }
+        : undefined,
       where: {
         date: {
           gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),

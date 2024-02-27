@@ -1,5 +1,5 @@
 export const formatNumberPrecission = (
-  value: number | undefined,
+  value: number,
   precission: number,
 ): number => {
   if (!value) return 0;

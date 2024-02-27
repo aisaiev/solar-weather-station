@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { ChartData } from 'chart.js';
 import { SensorDataPeriod } from './models/sensor-data-period.model';
 import { SensorType } from './models/sensor-type.model';
-import { SensorsData } from '../../services/sensors-data/sensors-data.model';
 import { getLineChartData } from './utils/chart-data.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
 import LinearChart from '../charts/linear-chart/LinearChart';
@@ -24,7 +23,7 @@ function SensorsDataChart() {
   });
 
   useEffect(() => {
-    const prepareChartData = (sensorsData: SensorsData[]): void => {
+    const prepareChartData = (sensorsData: Record<string, number>[]): void => {
       const data = getLineChartData(sensorType, sensorsData);
       setChartData(data);
     };
@@ -34,19 +33,19 @@ function SensorsDataChart() {
       switch (sensorDataPeriod) {
         case SensorDataPeriod.Day:
           {
-            const { data } = await SensorsDataService.getDataForDay();
+            const { data } = await SensorsDataService.getDataForDay(sensorType);
             prepareChartData(data);
           }
           break;
         case SensorDataPeriod.Week:
           {
-            const { data } = await SensorsDataService.getDataForWeek();
+            const { data } = await SensorsDataService.getDataForWeek(sensorType);
             prepareChartData(data);
           }
           break;
         case SensorDataPeriod.Month:
           {
-            const { data } = await SensorsDataService.getDataForMonth();
+            const { data } = await SensorsDataService.getDataForMonth(sensorType);
             prepareChartData(data);
           }
           break;
