@@ -54,7 +54,7 @@ export class WeatherMeasurementsService {
     }
 
     async getWeatherMeasurementsForMonth(type: WeatherMeasurementType) {
-        const from = new Date(new Date().setDate(new Date().getMonth() - 1));
+        const from = new Date(new Date().setMonth(new Date().getMonth() - 1));
         const till = new Date();
         return this.database.query.weatherMeasurements.findMany({
             where: (measurements) => between(measurements.date, from, till),
