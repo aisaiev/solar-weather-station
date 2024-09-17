@@ -9,7 +9,7 @@ import { WeatherMeasurementsModule } from './weather-measurements/weather-measur
 @Module({
     imports: [
         ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', '../frontend/build'),
+            rootPath: join(__dirname, '..', '../../frontend/build'),
         }),
         AppConfigModule,
         DatabaseModule,
