@@ -35,7 +35,22 @@ export class WeatherMeasurementsMqttDto {
     batteryVoltage: number;
 
     @IsNumber()
+    batteryCurrent: number;
+
+    @IsNumber()
+    batteryPower: number;
+
+    @IsNumber()
     batteryLevel: number;
+
+    @IsNumber()
+    solarPanelVoltage: number;
+
+    @IsNumber()
+    solarPanelCurrent: number;
+
+    @IsNumber()
+    solarPanelPower: number;
 
     constructor(data: {
         mcu: string;
@@ -49,7 +64,12 @@ export class WeatherMeasurementsMqttDto {
         pressure: number;
         illuminance: number;
         batteryVoltage: number;
+        batteryCurrent: number;
+        batteryPower: number;
         batteryLevel: number;
+        solarPanelVoltage: number;
+        solarPanelCurrent: number;
+        solarPanelPower: number;
     }) {
         this.mcu = data.mcu;
         this.cpuFrequency = data.cpuFrequency;
@@ -62,6 +82,11 @@ export class WeatherMeasurementsMqttDto {
         this.pressure = data.pressure;
         this.illuminance = data.illuminance;
         this.batteryVoltage = data.batteryVoltage;
+        this.batteryCurrent = data.batteryCurrent;
+        this.batteryPower = data.batteryPower;
         this.batteryLevel = data.batteryLevel;
+        this.solarPanelVoltage = data.solarPanelVoltage;
+        this.solarPanelCurrent = data.solarPanelCurrent;
+        this.solarPanelPower = data.solarPanelPower;
     }
 }
