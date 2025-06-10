@@ -3,7 +3,7 @@ import SensorsDataTable from '../sensors-data-table/SensorsDataTable';
 
 function Main() {
   return (
-    <main className="container pt-0">
+    <main className="container">
       <article>
         <SensorsDataTable></SensorsDataTable>
         <SensorsDataChart></SensorsDataChart>

@@ -11,6 +11,11 @@ export interface SensorsData {
   pressure: number;
   illuminance: number;
   batteryVoltage: number;
+  batteryCurrent: number;
+  batteryPower: number;
   batteryLevel: number;
+  solarPanelVoltage: number;
+  solarPanelCurrent: number;
+  solarPanelPower: number;
   date: string;
 }

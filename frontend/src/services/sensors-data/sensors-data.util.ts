@@ -17,8 +17,18 @@ export class SensorsDataUtil {
                 return 'illuminance';
             case SensorType.BatteryVoltage:
                 return 'batteryVoltage';
+            case SensorType.BatteryCurrent:
+                return 'batteryCurrent';
+            case SensorType.BatteryPower:
+                return 'batteryPower';
             case SensorType.BatteryLevel:
                 return 'batteryLevel';
+            case SensorType.SolarPanelVoltage:
+                return 'solarPanelVoltage';
+            case SensorType.SolarPanelCurrent:
+                return 'solarPanelCurrent';
+            case SensorType.SolarPanelPower:
+                return 'solarPanelPower';
             default:
                 return '';
         }

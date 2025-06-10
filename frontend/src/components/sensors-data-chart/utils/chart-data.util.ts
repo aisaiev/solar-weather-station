@@ -38,8 +38,18 @@ export const getLineChartData = (
               return formatNumberPrecission(sd.illuminance, 0);
             case SensorType.BatteryVoltage:
               return formatNumberPrecission(sd.batteryVoltage, 2);
+            case SensorType.BatteryCurrent:
+              return formatNumberPrecission(sd.batteryCurrent, 2);
+            case SensorType.BatteryPower:
+              return formatNumberPrecission(sd.batteryPower, 2);
             case SensorType.BatteryLevel:
               return sd.batteryLevel;
+            case SensorType.SolarPanelVoltage:
+              return formatNumberPrecission(sd.solarPanelVoltage, 2);
+            case SensorType.SolarPanelCurrent:
+              return formatNumberPrecission(sd.solarPanelCurrent, 2);
+            case SensorType.SolarPanelPower:
+              return formatNumberPrecission(sd.solarPanelPower, 2);
             default:
               return 0;
           }

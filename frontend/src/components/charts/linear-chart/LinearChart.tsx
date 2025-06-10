@@ -13,8 +13,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import { SensorType } from '../../sensors-data-chart/models/sensor-type.model';
 
 function LinearChart({
-  data,
-  sensorType,
+  data
 }: {
   data: ChartData<'line'>;
   sensorType: SensorType;
@@ -28,7 +27,7 @@ function LinearChart({
     zoomPlugin,
   );
 
-  const options: ChartOptions = {
+  const options: ChartOptions<'line'> = {
     plugins: {
       zoom: {
         pan: {

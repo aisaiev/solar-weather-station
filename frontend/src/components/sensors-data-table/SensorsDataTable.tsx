@@ -163,6 +163,66 @@ function SensorsDataTable() {
         </tr>
         <tr>
           <td className="white-space-nowrap">
+            <i className="fa-solid fa-bolt"></i> Battery current
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.batteryCurrent, 2)}{' '}
+              {sensorsData && 'A'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-bolt"></i> Battery power
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.batteryPower, 2)}{' '}
+              {sensorsData && 'W'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-solar-panel"></i> Solar panel voltage
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.solarPanelVoltage, 2)}{' '}
+              {sensorsData && 'V'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-solar-panel"></i> Solar panel current
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.solarPanelCurrent, 2)}{' '}
+              {sensorsData && 'A'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
+            <i className="fa-solid fa-solar-panel"></i> Solar panel power
+          </td>
+          <td>
+            <span aria-busy={isDataLoading}>
+              {sensorsData &&
+                formatNumberPrecission(sensorsData?.solarPanelPower, 2)}{' '}
+              {sensorsData && 'W'}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td className="white-space-nowrap">
             <i className="fa-solid fa-battery-full"></i> Battery level
           </td>
           <td>

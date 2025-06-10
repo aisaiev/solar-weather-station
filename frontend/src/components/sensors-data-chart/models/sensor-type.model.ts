@@ -6,5 +6,10 @@ export enum SensorType {
   Pressure = 'Pressure',
   Illuminance = 'Illuminance',
   BatteryVoltage = 'Battery Voltage',
+  BatteryCurrent = 'Battery Current',
+  BatteryPower = 'Battery Power',
+  SolarPanelVoltage = 'Solar Panel Voltage',
+  SolarPanelCurrent = 'Solar Panel Current',
+  SolarPanelPower = 'Solar Panel Power',
   BatteryLevel = 'Battery Level',
 }

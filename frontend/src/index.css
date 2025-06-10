@@ -1,5 +1,7 @@
-.pt-0 {
-  padding-top: 0 !important;
+#root>footer,
+#root>header,
+#root>main {
+  padding: 0;
 }
 
 .text-align-center {
