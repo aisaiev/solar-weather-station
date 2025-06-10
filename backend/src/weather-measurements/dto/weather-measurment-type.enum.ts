@@ -6,5 +6,10 @@ export enum WeatherMeasurementType {
     InternalHumidity = 'internalHumidity',
     Illuminance = 'illuminance',
     BatteryVoltage = 'batteryVoltage',
+    BatteryCurrent = 'batteryCurrent',
+    BatteryPower = 'batteryPower',
     BatteryLevel = 'batteryLevel',
+    SolarPanelVoltage = 'solarPanelVoltage',
+    SolarPanelCurrent = 'solarPanelCurrent',
+    SolarPanelPower = 'solarPanelPower',
 }

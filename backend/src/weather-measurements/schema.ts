@@ -22,7 +22,12 @@ export const weatherMeasurements = pgTable(
     pressure: real('pressure'),
     illuminance: real('illuminance'),
     batteryVoltage: real('batteryVoltage'),
+    batteryCurrent: real('batteryCurrent'),
+    batteryPower: real('batteryPower'),
     batteryLevel: real('batteryLevel'),
+    solarPanelVoltage: real('solarPanelVoltage'),
+    solarPanelCurrent: real('solarPanelCurrent'),
+    solarPanelPower: real('solarPanelPower'),
     date: timestamp('date'),
   },
   (table) => {

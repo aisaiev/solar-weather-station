@@ -1,0 +1,156 @@
+{
+  "id": "4836a304-3e8f-422f-a7b2-89418108bedc",
+  "prevId": "80c431fa-529e-42d5-b91c-67f30d1cb59d",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.WeatherMeasurements": {
+      "name": "WeatherMeasurements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "mcu": {
+          "name": "mcu",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpuFrequency": {
+          "name": "cpuFrequency",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ramUsageKb": {
+          "name": "ramUsageKb",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ramUsagePercent": {
+          "name": "ramUsagePercent",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "temperature": {
+          "name": "temperature",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "internalTemperature": {
+          "name": "internalTemperature",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "humidity": {
+          "name": "humidity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "internalHumidity": {
+          "name": "internalHumidity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pressure": {
+          "name": "pressure",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "illuminance": {
+          "name": "illuminance",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "batteryVoltage": {
+          "name": "batteryVoltage",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "batteryCurrent": {
+          "name": "batteryCurrent",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "batteryPower": {
+          "name": "batteryPower",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "batteryLevel": {
+          "name": "batteryLevel",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solarPanelVoltage": {
+          "name": "solarPanelVoltage",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solarPanelCurrent": {
+          "name": "solarPanelCurrent",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "solarPanelPower": {
+          "name": "solarPanelPower",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "date_idx": {
+          "name": "date_idx",
+          "columns": [
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
