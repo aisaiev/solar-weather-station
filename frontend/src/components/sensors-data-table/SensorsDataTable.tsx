@@ -25,7 +25,7 @@ import {
   TableCell,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function SensorsDataTable() {
@@ -70,152 +70,215 @@ function SensorsDataTable() {
   );
 
   return (
-    <Card>
-      <CardContent>
-        <Table>
-          <TableBody>
-            <DataRow
-              icon={Clock}
-              label="Local time"
-              value={sensorsData && getKyivLocalTimeString()}
-            />
-            <DataRow
-              icon={ClockArrowUp}
-              label="Last updated on"
-              value={
-                sensorsData &&
-                convertDateStringToKyivDateTimeString(sensorsData?.date)
-              }
-            />
-            <DataRow
-              icon={Cpu}
-              label="MCU"
-              value={sensorsData?.mcu}
-            />
-            <DataRow
-              icon={Activity}
-              label="CPU frequency"
-              value={
-                sensorsData &&
-                `${sensorsData.cpuFrequency} MHz`
-              }
-            />
-            <DataRow
-              icon={MemoryStick}
-              label="RAM usage"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.ramUsagePercent, 0)}% (${formatNumberPrecission(sensorsData.ramUsageKb, 0)} KB)`
-              }
-            />
-            <DataRow
-              icon={Thermometer}
-              label="Temperature"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.temperature, 1)} °C`
-              }
-            />
-            <DataRow
-              icon={Droplet}
-              label="Humidity"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.humidity, 1)} %`
-              }
-            />
-            <DataRow
-              icon={Gauge}
-              label="Pressure"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.pressure, 1)} hPa`
-              }
-            />
-            <DataRow
-              icon={Sun}
-              label="Illuminance"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.illuminance, 0)} lx`
-              }
-            />
-            <DataRow
-              icon={Thermometer}
-              label="Internal Temperature"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.internalTemperature, 1)} °C`
-              }
-            />
-            <DataRow
-              icon={Droplet}
-              label="Internal Humidity"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.internalHumidity, 1)} %`
-              }
-            />
-            <DataRow
-              icon={Zap}
-              label="Battery voltage"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.batteryVoltage, 2)} V`
-              }
-            />
-            <DataRow
-              icon={Zap}
-              label="Battery current"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.batteryCurrent, 2)} A`
-              }
-            />
-            <DataRow
-              icon={Zap}
-              label="Battery power"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.batteryPower, 2)} W`
-              }
-            />
-            <DataRow
-              icon={Sun}
-              label="Solar panel voltage"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.solarPanelVoltage, 2)} V`
-              }
-            />
-            <DataRow
-              icon={Sun}
-              label="Solar panel current"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.solarPanelCurrent, 2)} A`
-              }
-            />
-            <DataRow
-              icon={Sun}
-              label="Solar panel power"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.solarPanelPower, 2)} W`
-              }
-            />
-            <DataRow
-              icon={Battery}
-              label="Battery level"
-              value={
-                sensorsData &&
-                `${formatNumberPrecission(sensorsData.batteryLevel, 0)} %`
-              }
-            />
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* System Status */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mt-4 mb-4 flex items-center gap-2">
+            <Cpu className="h-5 w-5" />
+            System Status
+          </h3>
+          <Table>
+            <TableBody>
+              <DataRow
+                icon={Clock}
+                label="Local time"
+                value={sensorsData && getKyivLocalTimeString()}
+              />
+              <DataRow
+                icon={ClockArrowUp}
+                label="Last updated"
+                value={
+                  sensorsData &&
+                  convertDateStringToKyivDateTimeString(sensorsData?.date)
+                }
+              />
+              <DataRow
+                icon={Cpu}
+                label="MCU"
+                value={sensorsData?.mcu}
+              />
+              <DataRow
+                icon={Activity}
+                label="CPU frequency"
+                value={
+                  sensorsData &&
+                  `${sensorsData.cpuFrequency} MHz`
+                }
+              />
+              <DataRow
+                icon={MemoryStick}
+                label="RAM usage"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.ramUsagePercent, 0)}% (${formatNumberPrecission(sensorsData.ramUsageKb, 0)} KB)`
+                }
+              />
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Environmental Sensors */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mt-4 mb-4 flex items-center gap-2">
+            <Thermometer className="h-5 w-5" />
+            Environment
+          </h3>
+          <Table>
+            <TableBody>
+              <DataRow
+                icon={Thermometer}
+                label="Temperature"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.temperature, 1)} °C`
+                }
+              />
+              <DataRow
+                icon={Droplet}
+                label="Humidity"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.humidity, 1)} %`
+                }
+              />
+              <DataRow
+                icon={Gauge}
+                label="Pressure"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.pressure, 1)} hPa`
+                }
+              />
+              <DataRow
+                icon={Sun}
+                label="Illuminance"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.illuminance, 0)} lx`
+                }
+              />
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Internal Sensors */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mt-4 mb-4 flex items-center gap-2">
+            <Thermometer className="h-5 w-5" />
+            Internal
+          </h3>
+          <Table>
+            <TableBody>
+              <DataRow
+                icon={Thermometer}
+                label="Temperature"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.internalTemperature, 1)} °C`
+                }
+              />
+              <DataRow
+                icon={Droplet}
+                label="Humidity"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.internalHumidity, 1)} %`
+                }
+              />
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Battery */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mt-4 mb-4 flex items-center gap-2">
+            <Battery className="h-5 w-5" />
+            Battery
+          </h3>
+          <Table>
+            <TableBody>
+              <DataRow
+                icon={Battery}
+                label="Level"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.batteryLevel, 0)} %`
+                }
+              />
+              <DataRow
+                icon={Zap}
+                label="Voltage"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.batteryVoltage, 2)} V`
+                }
+              />
+              <DataRow
+                icon={Zap}
+                label="Current"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.batteryCurrent, 2)} A`
+                }
+              />
+              <DataRow
+                icon={Zap}
+                label="Power"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.batteryPower, 2)} W`
+                }
+              />
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Solar Panel */}
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mt-4 mb-4 flex items-center gap-2">
+            <Sun className="h-5 w-5" />
+            Solar Panel
+          </h3>
+          <Table>
+            <TableBody>
+              <DataRow
+                icon={Sun}
+                label="Voltage"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.solarPanelVoltage, 2)} V`
+                }
+              />
+              <DataRow
+                icon={Sun}
+                label="Current"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.solarPanelCurrent, 2)} A`
+                }
+              />
+              <DataRow
+                icon={Sun}
+                label="Power"
+                value={
+                  sensorsData &&
+                  `${formatNumberPrecission(sensorsData.solarPanelPower, 2)} W`
+                }
+              />
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
