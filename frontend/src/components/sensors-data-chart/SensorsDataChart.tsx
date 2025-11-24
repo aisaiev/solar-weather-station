@@ -5,7 +5,8 @@ import { SensorType } from './models/sensor-type.model';
 import { getLineChartData } from './utils/chart-data.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
 import LinearChart from '../charts/linear-chart/LinearChart';
-import './SensorsDataChart.css';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function SensorsDataChart() {
   const [sensorType, setSensorType] = useState<SensorType>(
@@ -57,60 +58,57 @@ function SensorsDataChart() {
   }, [sensorType, sensorDataPeriod]);
 
   return (
-    <div>
-      <div className="toggles">
-        <div className="sensor-type-toggles">
-          {Object.values(SensorType).map((type) => {
-            return (
-              <div
-                className={`sensor-type-toggle ${
-                  type === sensorType ? 'checked' : ''
-                }`}
-                key={type}
+    <Card>
+      <CardHeader>
+        <CardTitle>Historical Data</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Tabs
+                value={sensorType}
+                onValueChange={(value) => setSensorType(value as SensorType)}
+                className="w-full"
               >
-                <input
-                  type="radio"
-                  id={type}
-                  value={type}
-                  name={type}
-                  checked={type === sensorType}
-                  onChange={() => setSensorType(type)}
-                />
-                <label htmlFor={type}>{type}</label>
-              </div>
-            );
-          })}
-        </div>
-        <div className="sensor-data-period-toggles">
-          {Object.values(SensorDataPeriod).map((period) => {
-            return (
-              <div
-                className={`sensor-type-toggle ${
-                  period === sensorDataPeriod ? 'checked' : ''
-                }`}
-                key={period}
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+                  {Object.values(SensorType).map((type) => (
+                    <TabsTrigger key={type} value={type} className="text-xs sm:text-sm">
+                      {type}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+
+            <div>
+              <Tabs
+                value={sensorDataPeriod}
+                onValueChange={(value) =>
+                  setSensorDataPeriod(value as SensorDataPeriod)
+                }
+                className="w-full"
               >
-                <input
-                  type="radio"
-                  id={period}
-                  value={period}
-                  name={period}
-                  checked={period === sensorDataPeriod}
-                  onChange={() => setSensorDataPeriod(period)}
-                />
-                <label htmlFor={period}>{period}</label>
-              </div>
-            );
-          })}
+                <TabsList className="grid w-full grid-cols-3 h-auto">
+                  {Object.values(SensorDataPeriod).map((period) => (
+                    <TabsTrigger key={period} value={period} className="text-xs sm:text-sm">
+                      {period}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+
+          <div className={isDataLoading ? 'opacity-50' : ''}>
+            <LinearChart
+              data={chartData as ChartData<'line'>}
+              sensorType={sensorType}
+            />
+          </div>
         </div>
-      </div>
-      <div className={isDataLoading ? 'chart-data-loading' : ''}>
-        <LinearChart
-          data={chartData as ChartData<'line'>}
-          sensorType={sensorType}
-        ></LinearChart>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

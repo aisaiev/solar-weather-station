@@ -3,11 +3,11 @@ import SensorsDataTable from '../sensors-data-table/SensorsDataTable';
 
 function Main() {
   return (
-    <main className="container">
-      <article>
+    <main className="container mx-auto px-4 py-8">
+      <div className="space-y-8">
         <SensorsDataTable></SensorsDataTable>
         <SensorsDataChart></SensorsDataChart>
-      </article>
+      </div>
     </main>
   );
 }
