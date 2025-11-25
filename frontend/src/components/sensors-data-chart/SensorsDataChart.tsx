@@ -190,6 +190,7 @@ function SensorsDataChart() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={8}
+                    domain={['auto', 'auto']}
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Area
