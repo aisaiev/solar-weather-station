@@ -64,16 +64,18 @@ function SensorsDataChart() {
     };
 
     const prepareChartData = (sensorsData: Record<string, any>[]): void => {
-      const formattedData = sensorsData.map((item) => ({
-        date: new Date(item.date).toLocaleString('en-GB', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
-        value: Number(getSensorValue(item, sensorType).toFixed(2)),
-      }));
+      const formattedData = sensorsData
+        .filter((item) => getSensorValue(item, sensorType) != null)
+        .map((item) => ({
+          date: new Date(item.date).toLocaleString('en-GB', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+          }),
+          value: Number(getSensorValue(item, sensorType).toFixed(2)),
+        }));
       setChartData(formattedData);
     };
 
@@ -84,21 +86,18 @@ function SensorsDataChart() {
           case SensorDataPeriod.Day:
             {
               const { data } = await SensorsDataService.getDataForDay(sensorType);
-              console.log('Chart data received:', data);
               prepareChartData(data);
             }
             break;
           case SensorDataPeriod.Week:
             {
               const { data } = await SensorsDataService.getDataForWeek(sensorType);
-              console.log('Chart data received:', data);
               prepareChartData(data);
             }
             break;
           case SensorDataPeriod.Month:
             {
               const { data } = await SensorsDataService.getDataForMonth(sensorType);
-              console.log('Chart data received:', data);
               prepareChartData(data);
             }
             break;
