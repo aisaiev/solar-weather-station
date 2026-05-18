@@ -6,6 +6,15 @@ export const formatNumberPrecission = (
   return +value.toFixed(precission);
 };
 
+export const formatSensorValue = (
+  value: number | null | undefined,
+  precision: number,
+  unit: string,
+): string => {
+  if (value === null || value === undefined) return 'N/A';
+  return `${formatNumberPrecission(value, precision)} ${unit}`;
+};
+
 export const booleanToYesNo = (value: boolean | undefined): 'Yes' | 'No' => {
   return value ? 'Yes' : 'No';
 };

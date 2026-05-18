@@ -16,6 +16,7 @@ import { SensorsData } from '../../services/sensors-data/sensors-data.model';
 import {
   convertDateStringToKyivDateTimeString,
   formatNumberPrecission,
+  formatSensorValue,
   getKyivLocalTimeString,
 } from '../../utils/formatter.util';
 import SensorsDataService from '../../services/sensors-data/sensors-data.service';
@@ -131,34 +132,22 @@ function SensorsDataTable() {
               <DataRow
                 icon={Thermometer}
                 label="Temperature"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.temperature, 1)} °C`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.temperature, 1, '°C')}
               />
               <DataRow
                 icon={Droplet}
                 label="Humidity"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.humidity, 1)} %`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.humidity, 1, '%')}
               />
               <DataRow
                 icon={Gauge}
                 label="Pressure"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.pressure, 1)} hPa`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.pressure, 1, 'hPa')}
               />
               <DataRow
                 icon={Sun}
                 label="Illuminance"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.illuminance, 0)} lx`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.illuminance, 0, 'lx')}
               />
             </TableBody>
           </Table>
@@ -177,18 +166,12 @@ function SensorsDataTable() {
               <DataRow
                 icon={Thermometer}
                 label="Temperature"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.internalTemperature, 1)} °C`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.internalTemperature, 1, '°C')}
               />
               <DataRow
                 icon={Droplet}
                 label="Humidity"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.internalHumidity, 1)} %`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.internalHumidity, 1, '%')}
               />
             </TableBody>
           </Table>
@@ -207,34 +190,22 @@ function SensorsDataTable() {
               <DataRow
                 icon={Battery}
                 label="Level"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.batteryLevel, 0)} %`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.batteryLevel, 0, '%')}
               />
               <DataRow
                 icon={Zap}
                 label="Voltage"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.batteryVoltage, 2)} V`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.batteryVoltage, 2, 'V')}
               />
               <DataRow
                 icon={Zap}
                 label="Current"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.batteryCurrent, 2)} A`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.batteryCurrent, 2, 'A')}
               />
               <DataRow
                 icon={Zap}
                 label="Power"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.batteryPower, 2)} W`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.batteryPower, 2, 'W')}
               />
             </TableBody>
           </Table>
@@ -253,26 +224,17 @@ function SensorsDataTable() {
               <DataRow
                 icon={Sun}
                 label="Voltage"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.solarPanelVoltage, 2)} V`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.solarPanelVoltage, 2, 'V')}
               />
               <DataRow
                 icon={Sun}
                 label="Current"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.solarPanelCurrent, 2)} A`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.solarPanelCurrent, 2, 'A')}
               />
               <DataRow
                 icon={Sun}
                 label="Power"
-                value={
-                  sensorsData &&
-                  `${formatNumberPrecission(sensorsData.solarPanelPower, 2)} W`
-                }
+                value={sensorsData && formatSensorValue(sensorsData.solarPanelPower, 2, 'W')}
               />
             </TableBody>
           </Table>
