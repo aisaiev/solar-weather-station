@@ -238,9 +238,9 @@ SensorData WeatherStation::readSensors() {
     }
 
     // INA226 — solar panel (getCurrent/getPower return A and W directly)
-    d.solarVoltage = _inaSolar.getBusVoltage();
-    d.solarCurrent = fmaxf(0.0f, _inaSolar.getCurrent()); // clamp negative noise to 0
-    d.solarPower   = _inaSolar.getPower();
+    d.solarPanelVoltage = _inaSolar.getBusVoltage();
+    d.solarPanelCurrent = fmaxf(0.0f, _inaSolar.getCurrent()); // clamp negative noise to 0
+    d.solarPanelPower   = _inaSolar.getPower();
 
     // INA226 — battery
     d.batteryVoltage = _inaBattery.getBusVoltage();
@@ -271,9 +271,9 @@ void WeatherStation::publishMeasurements(const SensorData& d) {
     set("internalTemperature", d.internalTemp);
     set("internalHumidity",    d.internalHumidity);
     set("illuminance",         d.illuminance);
-    set("solarVoltage",        d.solarVoltage);
-    set("solarCurrent",        d.solarCurrent);
-    set("solarPower",          d.solarPower);
+    set("solarPanelVoltage",   d.solarPanelVoltage);
+    set("solarPanelCurrent",   d.solarPanelCurrent);
+    set("solarPanelPower",     d.solarPanelPower);
     set("batteryVoltage",      d.batteryVoltage);
     set("batteryCurrent",      d.batteryCurrent);
     set("batteryPower",        d.batteryPower);
