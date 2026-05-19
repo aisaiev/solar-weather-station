@@ -44,7 +44,7 @@ static constexpr float BATTERY_VOLTAGE_MAX = 4.2f;
 static constexpr uint32_t WIFI_TIMEOUT_MS   = 15000;
 static constexpr uint32_t MQTT_TIMEOUT_MS   = 5000;
 static constexpr uint32_t OTA_CHECK_MS      = 500;
-static constexpr uint64_t SLEEP_DURATION_US = 1ULL * 60 * 1000000; // 1 minute
+static constexpr uint64_t SLEEP_DURATION_US = 5ULL * 60 * 1000000; // 5 minutes
 
 // ─── Web server ───────────────────────────────────────────────────────────────
 
