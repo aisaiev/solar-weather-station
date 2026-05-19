@@ -3,6 +3,7 @@
 #include <math.h>
 #include <esp_log.h>
 #include <esp_sleep.h>
+#include <driver/gpio.h>
 #include <ArduinoJson.h>
 #include <secrets.h>
 
@@ -30,20 +31,29 @@ void WeatherStation::begin() {
 
     initHardware();
     initSensors();
+
+    // Start WiFi (async) then immediately wake the Heltec node.
+    // The 8 s Meshtastic boot wait overlaps with WiFi association time,
+    // so there is virtually no extra latency added to the cycle.
     connectWifi();
+    _meshtastic.begin();
+    _meshtastic.wakeNode(); // pulses RST, then blocks HELTEC_BOOT_WAIT_MS
 
     if (!waitBits(EVT_WIFI_READY, WIFI_TIMEOUT_MS)) {
         ESP_LOGE(TAG, "WiFi timeout — entering deep sleep");
+        _meshtastic.sendShutdown();
         enterDeepSleep();
     }
 
     if (!connectMqtt()) {
         ESP_LOGE(TAG, "MQTT connect failed — entering deep sleep");
+        _meshtastic.sendShutdown();
         enterDeepSleep();
     }
 
     if (!waitBits(EVT_MQTT_READY, MQTT_TIMEOUT_MS)) {
         ESP_LOGE(TAG, "MQTT timeout — entering deep sleep");
+        _meshtastic.sendShutdown();
         enterDeepSleep();
     }
 
@@ -56,7 +66,18 @@ void WeatherStation::begin() {
     }
 
     SensorData data = readSensors();
+
+    // Publish over WiFi/MQTT (existing path)
     publishMeasurements(data);
+
+    // Transmit as Meshtastic environment telemetry over serial
+    _meshtastic.sendEnvironmentTelemetry(data);
+
+    // Ask Heltec to shut down after HELTEC_SHUTDOWN_SECONDS, then wait
+    // HELTEC_TX_WAIT_MS for the LoRa packet to be sent before we sleep.
+    _meshtastic.sendShutdown();
+    delay(HELTEC_TX_WAIT_MS);
+
     enterDeepSleep();
 }
 
@@ -292,6 +313,12 @@ void WeatherStation::enterDeepSleep() {
 
     ESP_LOGI(TAG, "Entering deep sleep for %llu s", SLEEP_DURATION_US / 1000000ULL);
     esp_sleep_enable_timer_wakeup(SLEEP_DURATION_US);
+
+    // Hold GPIO6 (Heltec RST) HIGH during deep sleep.
+    // Without this the digital IO domain powers off and the pin floats,
+    // which can hold the Heltec in reset for the entire sleep period.
+    gpio_hold_en((gpio_num_t)HELTEC_WAKE_PIN);
+
     esp_deep_sleep_start();
 }
 

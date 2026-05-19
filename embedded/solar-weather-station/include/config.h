@@ -11,6 +11,21 @@ static constexpr uint8_t PIN_MOSFET = 5; // N-MOSFET gate on sensor ground rail:
 static constexpr uint8_t I2C_SDA    = 1;
 static constexpr uint8_t I2C_SCL    = 2;
 
+// ─── Heltec V3 Meshtastic node ────────────────────────────────────────────────
+
+// ESP32-S3 GPIO6 → Heltec V3 RST (100ms LOW pulse reboots/wakes Heltec)
+static constexpr uint8_t HELTEC_WAKE_PIN   = 6;
+// ESP32-S3 UART2: GPIO17=TX → Heltec GPIO4 (Serial Module RXD)
+//                 GPIO18=RX ← Heltec GPIO5 (Serial Module TXD)
+static constexpr uint8_t HELTEC_SERIAL_TX  = 17;
+static constexpr uint8_t HELTEC_SERIAL_RX  = 18;
+// Time to wait after RST pulse for Meshtastic to fully boot (ms)
+static constexpr uint32_t HELTEC_BOOT_WAIT_MS     = 12000;
+// Time to wait after sending telemetry for Heltec to LoRa-transmit (ms)
+static constexpr uint32_t HELTEC_TX_WAIT_MS        = 4000;
+// Seconds Meshtastic waits before shutting down after AdminMessage shutdown
+static constexpr uint32_t HELTEC_SHUTDOWN_SECONDS  = 10;
+
 // ─── INA226 ───────────────────────────────────────────────────────────────────
 
 static constexpr uint8_t  INA226_ADDR_SOLAR   = 0x40;
@@ -29,7 +44,7 @@ static constexpr float BATTERY_VOLTAGE_MAX = 4.2f;
 static constexpr uint32_t WIFI_TIMEOUT_MS   = 15000;
 static constexpr uint32_t MQTT_TIMEOUT_MS   = 5000;
 static constexpr uint32_t OTA_CHECK_MS      = 500;
-static constexpr uint64_t SLEEP_DURATION_US = 5ULL * 60 * 1000000; // 5 minutes
+static constexpr uint64_t SLEEP_DURATION_US = 1ULL * 60 * 1000000; // 1 minute
 
 // ─── Web server ───────────────────────────────────────────────────────────────
 

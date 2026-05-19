@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "SensorData.h"
+#include "MeshtasticSerial.h"
 
 class WeatherStation {
 public:
@@ -49,9 +50,10 @@ private:
     INA226          _inaSolar;
     INA226          _inaBattery;
 
-    WiFiClient     _wifiClient;
-    PubSubClient   _mqtt;
-    AsyncWebServer _server;
+    WiFiClient       _wifiClient;
+    PubSubClient     _mqtt;
+    AsyncWebServer   _server;
+    MeshtasticSerial _meshtastic;
 
     void initHardware();
     void initSensors();
