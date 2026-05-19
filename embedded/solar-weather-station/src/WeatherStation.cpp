@@ -3,6 +3,7 @@
 #include <math.h>
 #include <esp_log.h>
 #include <esp_sleep.h>
+#include <esp_heap_caps.h>
 #include <driver/gpio.h>
 #include <ArduinoJson.h>
 #include <secrets.h>
@@ -253,6 +254,13 @@ SensorData WeatherStation::readSensors() {
         d.batteryLevel = fmaxf(0.0f, fminf(100.0f, level));
     }
 
+    // RAM usage (internal SRAM heap only, excludes PSRAM)
+    uint32_t totalHeap = heap_caps_get_total_size(MALLOC_CAP_INTERNAL);
+    uint32_t freeHeap  = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+    uint32_t usedHeap  = totalHeap - freeHeap;
+    d.ramUsageKb      = usedHeap / 1024.0f;
+    d.ramUsagePercent = (totalHeap > 0) ? (usedHeap * 100.0f / totalHeap) : NAN;
+
     return d;
 }
 
@@ -278,6 +286,8 @@ void WeatherStation::publishMeasurements(const SensorData& d) {
     set("batteryCurrent",      d.batteryCurrent);
     set("batteryPower",        d.batteryPower);
     set("batteryLevel",        d.batteryLevel);
+    set("ramUsageKb",          d.ramUsageKb);
+    set("ramUsagePercent",     d.ramUsagePercent);
 
     String payload;
     serializeJson(doc, payload);

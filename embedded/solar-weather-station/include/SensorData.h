@@ -16,4 +16,6 @@ struct SensorData {
     float batteryCurrent   = NAN; // A
     float batteryPower     = NAN; // W
     float batteryLevel     = NAN; // %
+    float ramUsageKb       = NAN; // KB
+    float ramUsagePercent  = NAN; // %
 };
