@@ -7,7 +7,7 @@
 
 // ─── Pins ─────────────────────────────────────────────────────────────────────
 
-static constexpr uint8_t PIN_MOSFET = 5; // N-MOSFET gate on sensor ground rail: HIGH = ON
+static constexpr uint8_t PIN_SENSOR_PWR = 5; // Sensor VCC rail powered directly from GPIO 5: HIGH = ON
 static constexpr uint8_t I2C_SDA    = 1;
 static constexpr uint8_t I2C_SCL    = 2;
 

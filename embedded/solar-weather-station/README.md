@@ -11,11 +11,11 @@ ESP32-S3 firmware for a solar-powered weather station. Reads environmental and p
 | BH1750 (illuminance) | I2C | 0x23 |
 | INA226 — solar panel (voltage, current, power) | I2C | 0x40 |
 | INA226 — battery (voltage, current, power, level) | I2C | 0x41 |
-| IRLB8748PBF N-MOSFET (sensor ground rail) | GPIO 5 | — |
+| GPIO 5 (sensor VCC rail) | GPIO 5 | — |
 | Heltec WiFi LoRa 32 V3 (Meshtastic node) | UART2 | GPIO 17 TX / GPIO 18 RX |
 
 **I2C pins:** SDA = GPIO 1, SCL = GPIO 2  
-**MOSFET pin:** GPIO 5 (IRLB8748PBF N-MOSFET) — gate driven HIGH to connect sensor ground rail and switch sensors ON.
+**MOSFET pin:** GPIO 5 — driven HIGH to supply sensor VCC directly, powering all sensors ON.
 
 ### Heltec V3 wiring
 
@@ -112,6 +112,7 @@ All tunable constants are in `include/config.h`:
 | `OTA_CHECK_MS` | 500 ms | Window to drain retained MQTT messages on boot |
 | `INA226_AVG` | 16 samples | INA226 hardware averaging (improves current accuracy) |
 | `BATTERY_VOLTAGE_MIN/MAX` | 2.8 / 4.2 V | Li-ion cell voltage range for battery level % |
+| `PIN_SENSOR_PWR` | GPIO 5 | GPIO pin supplying sensor VCC rail |
 | `HELTEC_WAKE_PIN` | GPIO 6 | ESP32-S3 pin connected to Heltec V3 RST |
 | `HELTEC_SERIAL_TX` | GPIO 17 | UART2 TX → Heltec GPIO 4 (Serial Module RXD) |
 | `HELTEC_SERIAL_RX` | GPIO 18 | UART2 RX ← Heltec GPIO 5 (Serial Module TXD) |

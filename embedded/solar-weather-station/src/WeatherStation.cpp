@@ -120,12 +120,14 @@ void WeatherStation::onMqttMessage(char* topic, uint8_t* payload, unsigned int l
 // ─── Private ──────────────────────────────────────────────────────────────────
 
 void WeatherStation::initHardware() {
-    // Activate N-MOSFET on sensor ground rail (HIGH = ON)
-    pinMode(PIN_MOSFET, OUTPUT);
-    digitalWrite(PIN_MOSFET, HIGH);
+    // Power sensor VCC rail directly from GPIO 5 (HIGH = ON).
+    // Release any deep-sleep hold first so the pin is writable again.
+    gpio_hold_dis((gpio_num_t)PIN_SENSOR_PWR);
+    pinMode(PIN_SENSOR_PWR, OUTPUT);
+    digitalWrite(PIN_SENSOR_PWR, HIGH);
 
     Wire.begin(I2C_SDA, I2C_SCL);
-    ESP_LOGI(TAG, "Hardware initialised (MOSFET on, I2C started)");
+    ESP_LOGI(TAG, "Hardware initialised (sensor power on, I2C started)");
 }
 
 void WeatherStation::initSensors() {
@@ -328,6 +330,11 @@ void WeatherStation::enterDeepSleep() {
     // Without this the digital IO domain powers off and the pin floats,
     // which can hold the Heltec in reset for the entire sleep period.
     gpio_hold_en((gpio_num_t)HELTEC_WAKE_PIN);
+
+    // Drive sensor VCC rail LOW and hold it so sensors are fully powered off
+    // during deep sleep rather than left floating.
+    digitalWrite(PIN_SENSOR_PWR, LOW);
+    gpio_hold_en((gpio_num_t)PIN_SENSOR_PWR);
 
     esp_deep_sleep_start();
 }
