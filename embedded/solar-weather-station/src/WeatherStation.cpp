@@ -311,9 +311,20 @@ void WeatherStation::runOtaMode() {
 
     ESP_LOGI(TAG, "ElegantOTA ready at http://<ip>/update");
 
+    const TickType_t EMIT_PERIOD_TICKS = pdMS_TO_TICKS(SLEEP_DURATION_US / 1000ULL);
+    TickType_t lastEmitTick = xTaskGetTickCount() - EMIT_PERIOD_TICKS; // trigger immediate first emit
+
     while (true) {
         ElegantOTA.loop();
         _mqtt.loop();
+
+        if ((xTaskGetTickCount() - lastEmitTick) >= EMIT_PERIOD_TICKS) {
+            lastEmitTick = xTaskGetTickCount();
+            SensorData data = readSensors();
+            publishMeasurements(data);
+            _meshtastic.sendEnvironmentTelemetry(data);
+        }
+
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
