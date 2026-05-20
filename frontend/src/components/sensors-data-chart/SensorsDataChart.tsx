@@ -35,13 +35,12 @@ function formatBucketDate(dateStr: string, period: SensorDataPeriod): string {
         minute: '2-digit',
         hour12: false,
       });
-    case SensorDataPeriod.Month:
-      return date.toLocaleString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        hour12: false,
-      });
+    case SensorDataPeriod.Month: {
+      const month = date.toLocaleString('en-GB', { month: 'short' });
+      const hh = String(date.getHours()).padStart(2, '0');
+      const mm = String(date.getMinutes()).padStart(2, '0');
+      return `${date.getDate()} ${month}, ${hh}:${mm}`;
+    }
   }
 }
 
