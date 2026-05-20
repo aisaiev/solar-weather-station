@@ -222,17 +222,17 @@ function SensorsDataTable() {
           <Table>
             <TableBody>
               <DataRow
-                icon={Sun}
+                icon={Zap}
                 label="Voltage"
                 value={sensorsData && formatSensorValue(sensorsData.solarPanelVoltage, 2, 'V')}
               />
               <DataRow
-                icon={Sun}
+                icon={Zap}
                 label="Current"
                 value={sensorsData && formatSensorValue(sensorsData.solarPanelCurrent, 2, 'A')}
               />
               <DataRow
-                icon={Sun}
+                icon={Zap}
                 label="Power"
                 value={sensorsData && formatSensorValue(sensorsData.solarPanelPower, 2, 'W')}
               />

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import * as schema from '../schema';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { asc, between, desc } from 'drizzle-orm';
+import { asc, between, desc, sql } from 'drizzle-orm';
 import { WeatherMeasurementsPeriod } from '../dto/weather-measurements-period.enum';
 import { WeatherMeasurementType } from '../dto/weather-measurment-type.enum';
 
@@ -64,6 +64,70 @@ export class WeatherMeasurementsService {
             },
             orderBy: [asc(schema.weatherMeasurements.date)],
         });
+    }
+
+    async getAggregatedWeatherMeasurements(
+        period: WeatherMeasurementsPeriod,
+        type: WeatherMeasurementType,
+    ) {
+        const { from, bucketSeconds } = this.getAggregationConfig(period);
+        const till = new Date();
+        const sensorColumns = {
+            [WeatherMeasurementType.Temperature]: schema.weatherMeasurements.temperature,
+            [WeatherMeasurementType.Humidity]: schema.weatherMeasurements.humidity,
+            [WeatherMeasurementType.Pressure]: schema.weatherMeasurements.pressure,
+            [WeatherMeasurementType.InternalTemperature]: schema.weatherMeasurements.internalTemperature,
+            [WeatherMeasurementType.InternalHumidity]: schema.weatherMeasurements.internalHumidity,
+            [WeatherMeasurementType.Illuminance]: schema.weatherMeasurements.illuminance,
+            [WeatherMeasurementType.BatteryVoltage]: schema.weatherMeasurements.batteryVoltage,
+            [WeatherMeasurementType.BatteryCurrent]: schema.weatherMeasurements.batteryCurrent,
+            [WeatherMeasurementType.BatteryPower]: schema.weatherMeasurements.batteryPower,
+            [WeatherMeasurementType.BatteryLevel]: schema.weatherMeasurements.batteryLevel,
+            [WeatherMeasurementType.SolarPanelVoltage]: schema.weatherMeasurements.solarPanelVoltage,
+            [WeatherMeasurementType.SolarPanelCurrent]: schema.weatherMeasurements.solarPanelCurrent,
+            [WeatherMeasurementType.SolarPanelPower]: schema.weatherMeasurements.solarPanelPower,
+        } satisfies Record<WeatherMeasurementType, unknown>;
+        const column = sensorColumns[type];
+        // Epoch-based bucketing works for any interval size (date_trunc only accepts single units)
+        const s = sql.raw(String(bucketSeconds));
+        const bucketExpr = sql<string>`to_timestamp(floor(extract(epoch from ${schema.weatherMeasurements.date}) / ${s}) * ${s})`;
+
+        return this.database
+            .select({
+                bucket: bucketExpr,
+                avg: sql<number>`round(avg(${column})::numeric, 2)`,
+                min: sql<number>`round(min(${column})::numeric, 2)`,
+                max: sql<number>`round(max(${column})::numeric, 2)`,
+            })
+            .from(schema.weatherMeasurements)
+            .where(between(schema.weatherMeasurements.date, from, till))
+            .groupBy(bucketExpr)
+            .orderBy(asc(bucketExpr));
+    }
+
+    private getAggregationConfig(period: WeatherMeasurementsPeriod): {
+        from: Date;
+        bucketSeconds: number;
+    } {
+        switch (period) {
+            case WeatherMeasurementsPeriod.Day:
+                return {
+                    from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                    bucketSeconds: 900, // 15 minutes
+                };
+            case WeatherMeasurementsPeriod.Week:
+                return {
+                    from: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    bucketSeconds: 3600, // 1 hour
+                };
+            case WeatherMeasurementsPeriod.Month:
+                return {
+                    from: new Date(
+                        new Date().setMonth(new Date().getMonth() - 1),
+                    ),
+                    bucketSeconds: 21600, // 6 hours
+                };
+        }
     }
 
     async getLatestWeatherMeasurement() {

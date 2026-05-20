@@ -3,6 +3,7 @@ import { SERVER_API_URL } from '../../constants/constants';
 import { httpClient } from '../http-client';
 import { SensorsData } from './sensors-data.model';
 import { SensorsDataUtil } from './sensors-data.util';
+import { AggregatedDataPoint } from './aggregated-data-point.model';
 
 class SensorsDataService {
   private readonly resourceUrl = SERVER_API_URL + '/weather-measurements';
@@ -39,6 +40,16 @@ class SensorsDataService {
       SensorsDataUtil.convertUiSensorTypeToApiSensorType(sensorType),
     );
     return httpClient.get<Record<string, number>[]>(url.toString());
+  }
+
+  getAggregatedData(period: string, sensorType: SensorType) {
+    const url = new URL(`${this.resourceUrl}/aggregated`);
+    url.searchParams.append('period', period.toLowerCase());
+    url.searchParams.append(
+      'type',
+      SensorsDataUtil.convertUiSensorTypeToApiSensorType(sensorType),
+    );
+    return httpClient.get<AggregatedDataPoint[]>(url.toString());
   }
 }
 

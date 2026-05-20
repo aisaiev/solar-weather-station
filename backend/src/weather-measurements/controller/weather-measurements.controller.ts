@@ -16,6 +16,16 @@ export class WeatherMeasurementsController {
         );
     }
 
+    @Get('aggregated')
+    async getAggregatedWeatherMeasurements(
+        @Query() query: GetWeatherMeasurementsQuery,
+    ) {
+        return this.weatherMeasurementsService.getAggregatedWeatherMeasurements(
+            query.period,
+            query.type,
+        );
+    }
+
     @Get('latest')
     async getLatestWeatherMeasurement() {
         return this.weatherMeasurementsService.getLatestWeatherMeasurement();
