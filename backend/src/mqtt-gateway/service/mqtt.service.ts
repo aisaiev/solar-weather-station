@@ -18,6 +18,14 @@ export class MqttService implements OnModuleInit {
     ) {}
 
     onModuleInit(): void {
+        const enabled = this.configService.get<string>(
+            EnvironmentVariables.MQTT_ENABLED,
+        );
+        if (enabled !== 'true') {
+            this.logger.warn('MQTT is disabled, skipping connection');
+            return;
+        }
+
         const host = this.configService.get<string>(
             EnvironmentVariables.MQTT_HOST,
         );

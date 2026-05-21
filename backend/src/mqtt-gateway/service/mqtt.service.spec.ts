@@ -16,6 +16,7 @@ const mockMqttClient = {
 const mockConfigService = {
     get: jest.fn((key: string) => {
         const config: Record<string, string | number> = {
+            [EnvironmentVariables.MQTT_ENABLED]: 'true',
             [EnvironmentVariables.MQTT_HOST]: 'localhost',
             [EnvironmentVariables.MQTT_PORT]: 1883,
             [EnvironmentVariables.MQTT_TOPIC]: 'weather/data',

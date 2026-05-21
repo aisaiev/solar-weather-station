@@ -76,7 +76,7 @@ describe('WeatherMeasurementsController', () => {
             expect(
                 mockWeatherMeasurementsService.getAggregatedWeatherMeasurements,
             ).toHaveBeenCalledWith(
-                WeatherMeasurementsPeriod.Week,
+                { period: WeatherMeasurementsPeriod.Week },
                 WeatherMeasurementType.Humidity,
             );
             expect(result).toEqual(mockData);
