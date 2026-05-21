@@ -16,7 +16,8 @@ import * as weatherMeasurementsSchema from '../weather-measurements/schema';
                         EnvironmentVariables.DATABASE_URL,
                     ),
                 });
-                return drizzle(pool, {
+                return drizzle({
+                    client: pool,
                     schema: {
                         ...weatherMeasurementsSchema,
                     },

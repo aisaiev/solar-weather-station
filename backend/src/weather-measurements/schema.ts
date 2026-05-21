@@ -30,9 +30,5 @@ export const weatherMeasurements = pgTable(
         solarPanelPower: real('solarPanelPower'),
         date: timestamp('date'),
     },
-    (table) => {
-        return {
-            dateIdx: index('date_idx').on(table.date),
-        };
-    },
+    (table) => [index('date_idx').on(table.date)],
 );
