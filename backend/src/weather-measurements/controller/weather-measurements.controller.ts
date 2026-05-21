@@ -20,8 +20,14 @@ export class WeatherMeasurementsController {
     async getAggregatedWeatherMeasurements(
         @Query() query: GetWeatherMeasurementsQuery,
     ) {
+        if (query.from && query.to) {
+            return this.weatherMeasurementsService.getAggregatedWeatherMeasurements(
+                { from: new Date(query.from), to: new Date(query.to) },
+                query.type,
+            );
+        }
         return this.weatherMeasurementsService.getAggregatedWeatherMeasurements(
-            query.period,
+            { period: query.period! },
             query.type,
         );
     }

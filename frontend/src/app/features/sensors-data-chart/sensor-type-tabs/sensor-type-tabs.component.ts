@@ -39,13 +39,13 @@ export class SensorTypeTabsComponent {
   protected readonly sensorTypeTabs: SensorTypeTab[] = [
     { label: 'Temperature', value: SensorType.Temperature, icon: 'lucideThermometer' },
     { label: 'Humidity', value: SensorType.Humidity, icon: 'lucideDroplet' },
+    { label: 'Pressure', value: SensorType.Pressure, icon: 'lucideGauge' },
     {
       label: 'Internal Temperature',
       value: SensorType.InternalTemperature,
       icon: 'lucideThermometer',
     },
     { label: 'Internal Humidity', value: SensorType.InternalHumidity, icon: 'lucideDroplet' },
-    { label: 'Pressure', value: SensorType.Pressure, icon: 'lucideGauge' },
     { label: 'Illuminance', value: SensorType.Illuminance, icon: 'lucideSun' },
     { label: 'Battery Voltage', value: SensorType.BatteryVoltage, icon: 'lucideZap' },
     { label: 'Battery Current', value: SensorType.BatteryCurrent, icon: 'lucideZap' },

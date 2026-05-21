@@ -1,7 +1,25 @@
 <z-card zTitle="Historical Data">
   <div class="flex flex-col gap-4">
     <app-sensor-type-tabs (selectedChange)="onSensorTypeChange($event)" />
-    <app-period-tabs (selectedChange)="onPeriodChange($event)" />
+    <div class="flex flex-wrap items-center gap-3">
+      <app-period-tabs (selectedChange)="onPeriodChange($event)" />
+      @if (isCustomMode()) {
+        <z-date-picker
+          placeholder="From"
+          [value]="dateFrom()"
+          zFormat="MMM d, yyyy"
+          [maxDate]="dateTo()"
+          (dateChange)="onDateFromChange($event)"
+        />
+        <z-date-picker
+          placeholder="To"
+          [value]="dateTo()"
+          zFormat="MMM d, yyyy"
+          [minDate]="dateFrom()"
+          (dateChange)="onDateToChange($event)"
+        />
+      }
+    </div>
     <div class="relative h-72">
       @if (isLoading()) {
         <z-skeleton class="h-full w-full rounded-lg" />

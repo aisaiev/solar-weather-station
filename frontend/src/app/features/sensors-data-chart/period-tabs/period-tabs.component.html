@@ -1,5 +1,10 @@
-<z-tab-group (zTabChange)="onTabChange($event)">
-  @for (tab of periodTabs; track tab.value) {
-    <z-tab [label]="tab.label"></z-tab>
+<z-select
+  class="w-44"
+  zPlaceholder="Select period"
+  [zValue]="selectedValue()"
+  (zValueChange)="onSelectChange($event)"
+>
+  @for (option of periodOptions; track option.value) {
+    <z-select-item [zValue]="option.value">{{ option.label }}</z-select-item>
   }
-</z-tab-group>
+</z-select>

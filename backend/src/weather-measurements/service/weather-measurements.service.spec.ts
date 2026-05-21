@@ -152,7 +152,7 @@ describe('WeatherMeasurementsService', () => {
             mockOrderBy.mockResolvedValueOnce(mockResults);
 
             const result = await service.getAggregatedWeatherMeasurements(
-                WeatherMeasurementsPeriod.Day,
+                { period: WeatherMeasurementsPeriod.Day },
                 WeatherMeasurementType.Temperature,
             );
 
@@ -171,7 +171,10 @@ describe('WeatherMeasurementsService', () => {
         ])(
             'should execute aggregation query for period %s and type %s',
             async (period, type) => {
-                await service.getAggregatedWeatherMeasurements(period, type);
+                await service.getAggregatedWeatherMeasurements(
+                    { period },
+                    type,
+                );
                 expect(mockSelect).toHaveBeenCalled();
                 expect(mockOrderBy).toHaveBeenCalled();
             },

@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ThemeService } from '@/core/services/theme.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, startWith } from 'rxjs';
+import { switchMap, startWith, filter } from 'rxjs';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions, Plugin } from 'chart.js';
 import { ZardCardComponent } from '@/shared/components/card';
 import { ZardSkeletonComponent } from '@/shared/components/skeleton';
+import { ZardDatePickerComponent } from '@/shared/components/date-picker';
 import { SensorsDataService } from '@/core/services/sensors-data.service';
 import { SensorType } from '@/core/models/sensor-type.enum';
 import { SensorDataPeriod } from '@/core/models/sensor-data-period.enum';
@@ -20,6 +21,7 @@ import { PeriodTabsComponent } from './period-tabs/period-tabs.component';
   imports: [
     ZardCardComponent,
     ZardSkeletonComponent,
+    ZardDatePickerComponent,
     BaseChartDirective,
     SensorTypeTabsComponent,
     PeriodTabsComponent,
@@ -33,24 +35,57 @@ export class SensorsDataChartComponent {
 
   protected readonly sensorType = signal<SensorType>(SensorType.Temperature);
   protected readonly period = signal<SensorDataPeriod>(SensorDataPeriod.Day);
+  protected readonly dateFrom = signal<Date | null>(null);
+  protected readonly dateTo = signal<Date | null>(null);
 
-  private readonly params = computed(() => ({ type: this.sensorType(), period: this.period() }));
+  protected readonly isCustomMode = computed(() => this.period() === SensorDataPeriod.Custom);
+
+  private readonly params = computed(
+    ():
+      | { type: SensorType; period: SensorDataPeriod }
+      | { type: SensorType; from: Date; to: Date }
+      | null => {
+      const period = this.period();
+      const type = this.sensorType();
+      if (period === SensorDataPeriod.Custom) {
+        const from = this.dateFrom();
+        const to = this.dateTo();
+        if (!from || !to) return null;
+        return { type, from, to };
+      }
+      return { type, period };
+    },
+  );
 
   protected readonly rawData = toSignal(
     toObservable(this.params).pipe(
-      switchMap(({ type, period }) =>
-        this.sensorsDataService.getAggregatedData(period, type).pipe(startWith(null)),
-      ),
+      filter((p) => p !== null),
+      switchMap((p) => {
+        if ('from' in p) {
+          return this.sensorsDataService
+            .getAggregatedData(p.from, p.to, p.type)
+            .pipe(startWith(null));
+        }
+        return this.sensorsDataService.getAggregatedData(p.period, p.type).pipe(startWith(null));
+      }),
     ),
     { initialValue: null },
   );
+
+  private readonly showYear = computed(() => {
+    const raw = this.rawData();
+    if (!raw || raw.length < 2) return false;
+    const firstYear = new Date(raw[0].bucket).getFullYear();
+    return raw.some((p) => new Date(p.bucket).getFullYear() !== firstYear);
+  });
 
   protected readonly isLoading = computed(() => this.rawData() === null);
 
   protected readonly chartData = computed((): ChartPoint[] => {
     const raw = this.rawData();
     if (!raw) return [];
-    return toChartPoints(raw, this.period());
+    const period = this.period();
+    return toChartPoints(raw, period);
   });
 
   protected readonly chartJsData = computed((): ChartData<'line'> => {
@@ -136,7 +171,7 @@ export class SensorsDataChartComponent {
               const dataIndex = items[0].dataIndex;
               const points = this.chartData();
               if (dataIndex >= points.length) return '';
-              return formatTooltipDate(points[dataIndex].bucket);
+              return formatTooltipDate(points[dataIndex].bucket, this.period(), this.showYear());
             },
             label: () => '',
             afterBody: (items) => {
@@ -192,5 +227,17 @@ export class SensorsDataChartComponent {
 
   protected onPeriodChange(period: SensorDataPeriod): void {
     this.period.set(period);
+    if (period !== SensorDataPeriod.Custom) {
+      this.dateFrom.set(null);
+      this.dateTo.set(null);
+    }
+  }
+
+  protected onDateFromChange(date: Date | null): void {
+    this.dateFrom.set(date);
+  }
+
+  protected onDateToChange(date: Date | null): void {
+    this.dateTo.set(date);
   }
 }

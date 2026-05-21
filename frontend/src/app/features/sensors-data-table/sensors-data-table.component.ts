@@ -8,7 +8,11 @@ import {
   formatMeasurementDate,
   getKyivLocalTimeString,
 } from '@/core/utils/formatter.util';
-import { SensorCardComponent, type SensorCardConfig, type SensorCardRow } from './sensor-card/sensor-card.component';
+import {
+  SensorCardComponent,
+  type SensorCardConfig,
+  type SensorCardRow,
+} from './sensor-card/sensor-card.component';
 
 @Component({
   selector: 'app-sensors-data-table',

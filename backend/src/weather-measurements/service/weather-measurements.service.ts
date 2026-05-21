@@ -67,11 +67,26 @@ export class WeatherMeasurementsService {
     }
 
     async getAggregatedWeatherMeasurements(
-        period: WeatherMeasurementsPeriod,
+        params:
+            | { period: WeatherMeasurementsPeriod }
+            | { from: Date; to: Date },
         type: WeatherMeasurementType,
     ) {
-        const { from, bucketSeconds } = this.getAggregationConfig(period);
-        const till = new Date();
+        let from: Date;
+        let till: Date;
+        let bucketSeconds: number;
+
+        if ('period' in params) {
+            const config = this.getAggregationConfig(params.period);
+            from = config.from;
+            till = new Date();
+            bucketSeconds = config.bucketSeconds;
+        } else {
+            from = params.from;
+            till = params.to;
+            bucketSeconds = this.getBucketSecondsForRange(from, till);
+        }
+
         const sensorColumns = {
             [WeatherMeasurementType.Temperature]:
                 schema.weatherMeasurements.temperature,
@@ -116,6 +131,15 @@ export class WeatherMeasurementsService {
             .where(between(schema.weatherMeasurements.date, from, till))
             .groupBy(bucketExpr)
             .orderBy(asc(bucketExpr));
+    }
+
+    private getBucketSecondsForRange(from: Date, to: Date): number {
+        const diffDays =
+            (to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24);
+        if (diffDays <= 2) return 900; // 15 min
+        if (diffDays <= 14) return 3600; // 1 hr
+        if (diffDays <= 90) return 21600; // 6 hr
+        return 86400; // 1 day
     }
 
     private getAggregationConfig(period: WeatherMeasurementsPeriod): {

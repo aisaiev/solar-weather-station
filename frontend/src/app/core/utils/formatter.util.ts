@@ -30,7 +30,11 @@ export function formatSensorValue(value: number | undefined | null, type: Sensor
   }
 }
 
-export function formatChartDate(dateString: string, period: SensorDataPeriod): string {
+export function formatChartDate(
+  dateString: string,
+  period: SensorDataPeriod,
+  showYear = false,
+): string {
   const date = new Date(dateString);
   switch (period) {
     case SensorDataPeriod.Day:
@@ -39,8 +43,7 @@ export function formatChartDate(dateString: string, period: SensorDataPeriod): s
         minute: '2-digit',
         hour12: false,
       });
-    case SensorDataPeriod.Week:
-    case SensorDataPeriod.Month: {
+    case SensorDataPeriod.Week: {
       const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' });
       const day = date.getDate();
       const time = date.toLocaleTimeString('en-GB', {
@@ -50,10 +53,27 @@ export function formatChartDate(dateString: string, period: SensorDataPeriod): s
       });
       return `${weekday} ${day}, ${time}`;
     }
+    case SensorDataPeriod.Month:
+    case SensorDataPeriod.Custom: {
+      const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' });
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-GB', { month: 'short' });
+      const time = date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      const yearPart = showYear ? ` ${date.getFullYear()}` : '';
+      return `${weekday} ${day} ${month}${yearPart}, ${time}`;
+    }
   }
 }
 
-export function formatTooltipDate(dateString: string): string {
+export function formatTooltipDate(
+  dateString: string,
+  period: SensorDataPeriod,
+  showYear = false,
+): string {
   const date = new Date(dateString);
   const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' });
   const day = date.getDate();
@@ -62,6 +82,11 @@ export function formatTooltipDate(dateString: string): string {
     minute: '2-digit',
     hour12: false,
   });
+  if (period === SensorDataPeriod.Month || period === SensorDataPeriod.Custom) {
+    const month = date.toLocaleDateString('en-GB', { month: 'short' });
+    const yearPart = showYear ? ` ${date.getFullYear()}` : '';
+    return `${weekday} ${day} ${month}${yearPart}, ${time}`;
+  }
   return `${weekday} ${day}, ${time}`;
 }
 

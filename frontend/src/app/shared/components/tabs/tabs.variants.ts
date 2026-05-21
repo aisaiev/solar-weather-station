@@ -36,7 +36,7 @@ export const tabNavVariants = cva('flex gap-4', {
   },
 });
 
-export const tabButtonVariants = cva('hover:bg-transparent rounded-none shrink-0', {
+export const tabButtonVariants = cva('hover:bg-transparent rounded-none shrink-0 cursor-pointer', {
   variants: {
     zActivePosition: {
       top: '',

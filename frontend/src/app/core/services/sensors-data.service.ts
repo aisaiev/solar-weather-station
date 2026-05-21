@@ -16,9 +16,27 @@ export class SensorsDataService {
     return this.http.get<SensorsData>(`${this.baseUrl}/weather-measurements/latest`);
   }
 
-  getAggregatedData(period: SensorDataPeriod, type: SensorType): Observable<AggregatedDataPoint[]> {
+  getAggregatedData(period: SensorDataPeriod, type: SensorType): Observable<AggregatedDataPoint[]>;
+  getAggregatedData(from: Date, to: Date, type: SensorType): Observable<AggregatedDataPoint[]>;
+  getAggregatedData(
+    periodOrFrom: SensorDataPeriod | Date,
+    typeOrTo: SensorType | Date,
+    type?: SensorType,
+  ): Observable<AggregatedDataPoint[]> {
+    if (periodOrFrom instanceof Date) {
+      return this.http.get<AggregatedDataPoint[]>(
+        `${this.baseUrl}/weather-measurements/aggregated`,
+        {
+          params: {
+            from: (periodOrFrom as Date).toISOString(),
+            to: (typeOrTo as Date).toISOString(),
+            type: type!,
+          },
+        },
+      );
+    }
     return this.http.get<AggregatedDataPoint[]>(`${this.baseUrl}/weather-measurements/aggregated`, {
-      params: { period, type },
+      params: { period: periodOrFrom, type: typeOrTo as SensorType },
     });
   }
 }
