@@ -1,0 +1,5 @@
+<z-tab-group (zTabChange)="onTabChange($event)">
+  @for (tab of periodTabs; track tab.value) {
+    <z-tab [label]="tab.label"></z-tab>
+  }
+</z-tab-group>

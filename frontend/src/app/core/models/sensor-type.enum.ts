@@ -1,0 +1,15 @@
+export enum SensorType {
+  Temperature = 'temperature',
+  Humidity = 'humidity',
+  Pressure = 'pressure',
+  InternalTemperature = 'internalTemperature',
+  InternalHumidity = 'internalHumidity',
+  Illuminance = 'illuminance',
+  BatteryVoltage = 'batteryVoltage',
+  BatteryCurrent = 'batteryCurrent',
+  BatteryPower = 'batteryPower',
+  BatteryLevel = 'batteryLevel',
+  SolarPanelVoltage = 'solarPanelVoltage',
+  SolarPanelCurrent = 'solarPanelCurrent',
+  SolarPanelPower = 'solarPanelPower',
+}

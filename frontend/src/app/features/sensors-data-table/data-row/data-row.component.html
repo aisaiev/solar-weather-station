@@ -1,0 +1,13 @@
+<td z-table-cell class="font-medium w-1/2">
+  <div class="flex items-center gap-2">
+    <ng-icon [name]="icon()" class="size-4 shrink-0" />
+    <span>{{ label() }}</span>
+  </div>
+</td>
+<td z-table-cell class="w-1/2">
+  @if (isLoading()) {
+    <z-skeleton class="h-5 w-24" />
+  } @else {
+    <span>{{ value() }}</span>
+  }
+</td>

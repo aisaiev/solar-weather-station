@@ -1,0 +1,5 @@
+<z-tab-group (zTabChange)="onTabChange($event)">
+  @for (tab of sensorTypeTabs; track tab.value) {
+    <z-tab [label]="tab.label" [icon]="tab.icon"></z-tab>
+  }
+</z-tab-group>

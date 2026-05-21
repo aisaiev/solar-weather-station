@@ -1,0 +1,197 @@
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <z-card [zTitle]="systemStatusTitle">
+    <table z-table>
+      <tbody z-table-body>
+        <tr
+          app-data-row
+          icon="lucideClock"
+          label="Local time"
+          [value]="currentTime()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideClockArrowUp"
+          label="Last updated"
+          [value]="lastUpdateTime()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideCpu"
+          label="MCU"
+          [value]="data()?.mcu ?? '—'"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideActivity"
+          label="CPU frequency"
+          [value]="cpuFrequency()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideMemoryStick"
+          label="RAM usage"
+          [value]="ram()"
+          [isLoading]="isLoading()"
+        ></tr>
+      </tbody>
+    </table>
+  </z-card>
+
+  <z-card [zTitle]="environmentTitle">
+    <table z-table>
+      <tbody z-table-body>
+        <tr
+          app-data-row
+          icon="lucideThermometer"
+          label="Temperature"
+          [value]="temperature()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideDroplet"
+          label="Humidity"
+          [value]="humidity()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideGauge"
+          label="Pressure"
+          [value]="pressure()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideSun"
+          label="Illuminance"
+          [value]="illuminance()"
+          [isLoading]="isLoading()"
+        ></tr>
+      </tbody>
+    </table>
+  </z-card>
+
+  <z-card [zTitle]="internalTitle">
+    <table z-table>
+      <tbody z-table-body>
+        <tr
+          app-data-row
+          icon="lucideThermometer"
+          label="Temperature"
+          [value]="internalTemperature()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideDroplet"
+          label="Humidity"
+          [value]="internalHumidity()"
+          [isLoading]="isLoading()"
+        ></tr>
+      </tbody>
+    </table>
+  </z-card>
+
+  <z-card [zTitle]="batteryTitle">
+    <table z-table>
+      <tbody z-table-body>
+        <tr
+          app-data-row
+          icon="lucideBattery"
+          label="Level"
+          [value]="batteryLevel()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideZap"
+          label="Voltage"
+          [value]="batteryVoltage()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideZap"
+          label="Current"
+          [value]="batteryCurrent()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideZap"
+          label="Power"
+          [value]="batteryPower()"
+          [isLoading]="isLoading()"
+        ></tr>
+      </tbody>
+    </table>
+  </z-card>
+
+  <z-card [zTitle]="solarPanelTitle">
+    <table z-table>
+      <tbody z-table-body>
+        <tr
+          app-data-row
+          icon="lucideSun"
+          label="Voltage"
+          [value]="solarVoltage()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideSun"
+          label="Current"
+          [value]="solarCurrent()"
+          [isLoading]="isLoading()"
+        ></tr>
+        <tr
+          app-data-row
+          icon="lucideSun"
+          label="Power"
+          [value]="solarPower()"
+          [isLoading]="isLoading()"
+        ></tr>
+      </tbody>
+    </table>
+  </z-card>
+</div>
+
+<ng-template #systemStatusTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideCpu" class="size-4" />
+    System Status
+  </div>
+</ng-template>
+
+<ng-template #environmentTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideThermometer" class="size-4" />
+    Environment
+  </div>
+</ng-template>
+
+<ng-template #internalTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideThermometer" class="size-4" />
+    Internal
+  </div>
+</ng-template>
+
+<ng-template #batteryTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideBattery" class="size-4" />
+    Battery
+  </div>
+</ng-template>
+
+<ng-template #solarPanelTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon name="lucideSun" class="size-4" />
+    Solar Panel
+  </div>
+</ng-template>
