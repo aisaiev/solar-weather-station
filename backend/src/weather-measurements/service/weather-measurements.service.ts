@@ -73,19 +73,32 @@ export class WeatherMeasurementsService {
         const { from, bucketSeconds } = this.getAggregationConfig(period);
         const till = new Date();
         const sensorColumns = {
-            [WeatherMeasurementType.Temperature]: schema.weatherMeasurements.temperature,
-            [WeatherMeasurementType.Humidity]: schema.weatherMeasurements.humidity,
-            [WeatherMeasurementType.Pressure]: schema.weatherMeasurements.pressure,
-            [WeatherMeasurementType.InternalTemperature]: schema.weatherMeasurements.internalTemperature,
-            [WeatherMeasurementType.InternalHumidity]: schema.weatherMeasurements.internalHumidity,
-            [WeatherMeasurementType.Illuminance]: schema.weatherMeasurements.illuminance,
-            [WeatherMeasurementType.BatteryVoltage]: schema.weatherMeasurements.batteryVoltage,
-            [WeatherMeasurementType.BatteryCurrent]: schema.weatherMeasurements.batteryCurrent,
-            [WeatherMeasurementType.BatteryPower]: schema.weatherMeasurements.batteryPower,
-            [WeatherMeasurementType.BatteryLevel]: schema.weatherMeasurements.batteryLevel,
-            [WeatherMeasurementType.SolarPanelVoltage]: schema.weatherMeasurements.solarPanelVoltage,
-            [WeatherMeasurementType.SolarPanelCurrent]: schema.weatherMeasurements.solarPanelCurrent,
-            [WeatherMeasurementType.SolarPanelPower]: schema.weatherMeasurements.solarPanelPower,
+            [WeatherMeasurementType.Temperature]:
+                schema.weatherMeasurements.temperature,
+            [WeatherMeasurementType.Humidity]:
+                schema.weatherMeasurements.humidity,
+            [WeatherMeasurementType.Pressure]:
+                schema.weatherMeasurements.pressure,
+            [WeatherMeasurementType.InternalTemperature]:
+                schema.weatherMeasurements.internalTemperature,
+            [WeatherMeasurementType.InternalHumidity]:
+                schema.weatherMeasurements.internalHumidity,
+            [WeatherMeasurementType.Illuminance]:
+                schema.weatherMeasurements.illuminance,
+            [WeatherMeasurementType.BatteryVoltage]:
+                schema.weatherMeasurements.batteryVoltage,
+            [WeatherMeasurementType.BatteryCurrent]:
+                schema.weatherMeasurements.batteryCurrent,
+            [WeatherMeasurementType.BatteryPower]:
+                schema.weatherMeasurements.batteryPower,
+            [WeatherMeasurementType.BatteryLevel]:
+                schema.weatherMeasurements.batteryLevel,
+            [WeatherMeasurementType.SolarPanelVoltage]:
+                schema.weatherMeasurements.solarPanelVoltage,
+            [WeatherMeasurementType.SolarPanelCurrent]:
+                schema.weatherMeasurements.solarPanelCurrent,
+            [WeatherMeasurementType.SolarPanelPower]:
+                schema.weatherMeasurements.solarPanelPower,
         } satisfies Record<WeatherMeasurementType, unknown>;
         const column = sensorColumns[type];
         // Epoch-based bucketing works for any interval size (date_trunc only accepts single units)
