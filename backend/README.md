@@ -1,73 +1,127 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Solar Weather Station — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS backend for the Solar Weather Station project. Ingests sensor data from an ESP32-based weather station via MQTT, stores it in PostgreSQL using Drizzle ORM, and exposes a REST API consumed by the Angular frontend. Also serves the frontend's static build.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+- **Framework**: NestJS (Node.js / TypeScript)
+- **Database**: PostgreSQL via [Drizzle ORM](https://orm.drizzle.team/)
+- **Transport**: MQTT (receives sensor payloads from the embedded device)
+- **Static serving**: `@nestjs/serve-static` (serves `../frontend/build`)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
+
+- Node.js 20+
+- PostgreSQL instance
+- MQTT broker accessible by the backend
+
+## Environment Variables
+
+Create a `.env` file in the `backend/` directory:
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/solar_weather
+
+MQTT_HOST=localhost
+MQTT_PORT=1883
+MQTT_USER=your_mqtt_user
+MQTT_PASSWORD=your_mqtt_password
+MQTT_TOPIC=weather/station
+```
 
 ## Installation
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Running the app
+## Running
 
 ```bash
 # development
-$ npm run start
+npm run start
 
-# watch mode
-$ npm run start:dev
+# watch mode (auto-reload)
+npm run start:dev
 
-# production mode
-$ npm run start:prod
+# production
+npm run start:prod
 ```
 
-## Test
+## Database Migrations
+
+Migrations are managed with [Drizzle Kit](https://orm.drizzle.team/kit-docs/overview).
+
+```bash
+# generate a new migration from schema changes
+npx drizzle-kit generate
+
+# apply pending migrations
+npx drizzle-kit migrate
+```
+
+Migration files live in `drizzle/`.
+
+## API Endpoints
+
+All endpoints are prefixed with `/weather-measurements`.
+
+| Method | Path                               | Query params              | Description                                 |
+|--------|------------------------------------|---------------------------|---------------------------------------------|
+| GET    | `/weather-measurements`            | `period`, `type`          | Raw measurements for the given period       |
+| GET    | `/weather-measurements/aggregated` | `period`, `type`          | Aggregated (averaged) measurements          |
+| GET    | `/weather-measurements/latest`     | —                         | Most recent measurement across all sensors  |
+
+### Query Parameters
+
+**`period`** — time window:
+- `day`
+- `week`
+- `month`
+
+**`type`** — measurement field:
+- `temperature`, `internalTemperature`
+- `humidity`, `internalHumidity`
+- `pressure`
+- `illuminance`
+- `batteryVoltage`, `batteryCurrent`, `batteryPower`, `batteryLevel`
+- `solarPanelVoltage`, `solarPanelCurrent`, `solarPanelPower`
+
+## Database Schema
+
+Table: `WeatherMeasurements`
+
+| Column                | Type        | Description                        |
+|-----------------------|-------------|------------------------------------|
+| `id`                  | serial PK   |                                    |
+| `mcu`                 | varchar(32) | MCU identifier                     |
+| `cpuFrequency`        | real        | CPU frequency (MHz)                |
+| `ramUsageKb`          | real        | RAM usage (KB)                     |
+| `ramUsagePercent`     | real        | RAM usage (%)                      |
+| `temperature`         | real        | External temperature (°C)          |
+| `internalTemperature` | real        | MCU/enclosure temperature (°C)     |
+| `humidity`            | real        | External relative humidity (%)     |
+| `internalHumidity`    | real        | Internal relative humidity (%)     |
+| `pressure`            | real        | Atmospheric pressure (hPa)         |
+| `illuminance`         | real        | Light intensity (lux)              |
+| `batteryVoltage`      | real        | Battery voltage (V)                |
+| `batteryCurrent`      | real        | Battery current (A)                |
+| `batteryPower`        | real        | Battery power (W)                  |
+| `batteryLevel`        | real        | Battery state of charge (%)        |
+| `solarPanelVoltage`   | real        | Solar panel voltage (V)            |
+| `solarPanelCurrent`   | real        | Solar panel current (A)            |
+| `solarPanelPower`     | real        | Solar panel power (W)              |
+| `date`                | timestamp   | Measurement timestamp (indexed)    |
+
+## Testing
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# coverage
+npm run test:cov
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
