@@ -1,0 +1,22 @@
+<z-card [zTitle]="cardTitle">
+  <table z-table>
+    <tbody z-table-body>
+      @for (row of rows(); track row.label) {
+        <tr
+          app-data-row
+          [icon]="row.icon"
+          [label]="row.label"
+          [value]="row.value"
+          [isLoading]="isLoading()"
+        ></tr>
+      }
+    </tbody>
+  </table>
+</z-card>
+
+<ng-template #cardTitle>
+  <div class="flex items-center gap-2">
+    <ng-icon [name]="titleIcon()" class="size-4" />
+    {{ title() }}
+  </div>
+</ng-template>

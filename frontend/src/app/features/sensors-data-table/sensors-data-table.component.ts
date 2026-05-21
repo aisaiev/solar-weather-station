@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideBattery, lucideCpu, lucideSun, lucideThermometer } from '@ng-icons/lucide';
-import { ZardCardComponent } from '@/shared/components/card';
-import { ZardTableImports } from '@/shared/components/table';
 import { SensorsDataService } from '@/core/services/sensors-data.service';
 import { SensorType } from '@/core/models/sensor-type.enum';
 import {
@@ -12,12 +8,11 @@ import {
   formatMeasurementDate,
   getKyivLocalTimeString,
 } from '@/core/utils/formatter.util';
-import { DataRowComponent } from './data-row/data-row.component';
+import { SensorCardComponent, type SensorCardConfig, type SensorCardRow } from './sensor-card/sensor-card.component';
 
 @Component({
   selector: 'app-sensors-data-table',
-  imports: [NgIcon, ZardCardComponent, ...ZardTableImports, DataRowComponent],
-  viewProviders: [provideIcons({ lucideCpu, lucideThermometer, lucideBattery, lucideSun })],
+  imports: [SensorCardComponent],
   templateUrl: './sensors-data-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -90,4 +85,55 @@ export class SensorsDataTableComponent {
   protected readonly solarPower = computed(() =>
     formatSensorValue(this.data()?.solarPanelPower, SensorType.SolarPanelPower),
   );
+
+  protected readonly cards = computed<SensorCardConfig[]>(() => [
+    {
+      title: 'System Status',
+      titleIcon: 'lucideCpu',
+      rows: [
+        { icon: 'lucideClock', label: 'Local time', value: this.currentTime() },
+        { icon: 'lucideClockArrowUp', label: 'Last updated', value: this.lastUpdateTime() },
+        { icon: 'lucideCpu', label: 'MCU', value: this.data()?.mcu ?? '—' },
+        { icon: 'lucideActivity', label: 'CPU frequency', value: this.cpuFrequency() },
+        { icon: 'lucideMemoryStick', label: 'RAM usage', value: this.ram() },
+      ],
+    },
+    {
+      title: 'Environment',
+      titleIcon: 'lucideThermometer',
+      rows: [
+        { icon: 'lucideThermometer', label: 'Temperature', value: this.temperature() },
+        { icon: 'lucideDroplet', label: 'Humidity', value: this.humidity() },
+        { icon: 'lucideGauge', label: 'Pressure', value: this.pressure() },
+        { icon: 'lucideSun', label: 'Illuminance', value: this.illuminance() },
+      ],
+    },
+    {
+      title: 'Internal',
+      titleIcon: 'lucideThermometer',
+      rows: [
+        { icon: 'lucideThermometer', label: 'Temperature', value: this.internalTemperature() },
+        { icon: 'lucideDroplet', label: 'Humidity', value: this.internalHumidity() },
+      ],
+    },
+    {
+      title: 'Battery',
+      titleIcon: 'lucideBattery',
+      rows: [
+        { icon: 'lucideBattery', label: 'Level', value: this.batteryLevel() },
+        { icon: 'lucideZap', label: 'Voltage', value: this.batteryVoltage() },
+        { icon: 'lucideZap', label: 'Current', value: this.batteryCurrent() },
+        { icon: 'lucideZap', label: 'Power', value: this.batteryPower() },
+      ],
+    },
+    {
+      title: 'Solar Panel',
+      titleIcon: 'lucideSun',
+      rows: [
+        { icon: 'lucideSun', label: 'Voltage', value: this.solarVoltage() },
+        { icon: 'lucideSun', label: 'Current', value: this.solarCurrent() },
+        { icon: 'lucideSun', label: 'Power', value: this.solarPower() },
+      ],
+    },
+  ]);
 }
