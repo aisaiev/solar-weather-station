@@ -2,8 +2,19 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { ThemeService } from '@/core/services/theme.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap, startWith, filter } from 'rxjs';
-import { BaseChartDirective } from 'ng2-charts';
-import { ChartData, ChartOptions, Plugin } from 'chart.js';
+import { BaseChartDirective, provideCharts } from 'ng2-charts';
+import {
+  CategoryScale,
+  ChartData,
+  ChartOptions,
+  Filler,
+  LinearScale,
+  LineController,
+  LineElement,
+  Plugin,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
 import { ZardCardComponent } from '@/shared/components/card';
 import { ZardSkeletonComponent } from '@/shared/components/skeleton';
 import { ZardDatePickerComponent } from '@/shared/components/date-picker';
@@ -25,6 +36,19 @@ import { PeriodTabsComponent } from './period-tabs/period-tabs.component';
     BaseChartDirective,
     SensorTypeTabsComponent,
     PeriodTabsComponent,
+  ],
+  providers: [
+    provideCharts({
+      registerables: [
+        LineController,
+        LineElement,
+        PointElement,
+        LinearScale,
+        CategoryScale,
+        Tooltip,
+        Filler,
+      ],
+    }),
   ],
   templateUrl: './sensors-data-chart.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

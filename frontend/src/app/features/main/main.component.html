@@ -1,4 +1,12 @@
 <main class="container mx-auto px-4 py-6 flex flex-col gap-6">
-  <app-sensors-data-table />
-  <app-sensors-data-chart />
+  @defer (on idle) {
+    <app-sensors-data-table />
+  } @placeholder {
+    <div class="h-48 rounded-lg bg-muted animate-pulse"></div>
+  }
+  @defer (on idle) {
+    <app-sensors-data-chart />
+  } @placeholder {
+    <div class="h-96 rounded-lg bg-muted animate-pulse"></div>
+  }
 </main>

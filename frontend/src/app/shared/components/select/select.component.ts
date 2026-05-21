@@ -1,6 +1,5 @@
 import {
   Overlay,
-  OverlayModule,
   OverlayPositionBuilder,
   type OverlayRef,
 } from '@angular/cdk/overlay';
@@ -56,7 +55,7 @@ const COMPACT_MODE_WIDTH_THRESHOLD = 100;
 
 @Component({
   selector: 'z-select, [z-select]',
-  imports: [OverlayModule, ZardBadgeComponent, NgIcon],
+  imports: [ZardBadgeComponent, NgIcon],
   template: `
     <button
       type="button"
