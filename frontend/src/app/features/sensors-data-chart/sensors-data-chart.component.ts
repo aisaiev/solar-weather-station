@@ -136,6 +136,16 @@ export class SensorsDataChartComponent {
     const dark = this.theme.isDark();
     const tickColor = dark ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.45)';
     const gridColor = dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
+    const points = this.chartData();
+    let yMin: number | undefined;
+    let yMax: number | undefined;
+    if (points.length) {
+      const dataMin = Math.min(...points.map((p) => p.min));
+      const dataMax = Math.max(...points.map((p) => p.max));
+      const margin = (dataMax - dataMin) * 0.05 || 1;
+      yMin = dataMin - margin;
+      yMax = dataMax + margin;
+    }
     return {
       responsive: true,
       maintainAspectRatio: false,
@@ -156,10 +166,11 @@ export class SensorsDataChartComponent {
           border: { display: false },
         },
         y: {
+          min: yMin,
+          max: yMax,
           border: { display: false },
           grid: { color: gridColor },
           ticks: { maxTicksLimit: 6, color: tickColor, font: { size: 12 } },
-          grace: '10%',
         },
       },
       plugins: {
