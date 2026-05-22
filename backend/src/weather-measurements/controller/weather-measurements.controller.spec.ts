@@ -129,9 +129,14 @@ describe('WeatherMeasurementsController', () => {
             'Content-Type',
             'text/event-stream',
         );
-        expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-cache');
+        expect(res.setHeader).toHaveBeenCalledWith(
+            'Cache-Control',
+            'no-cache, no-transform',
+        );
         expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
+        expect(res.setHeader).toHaveBeenCalledWith('X-Accel-Buffering', 'no');
         expect(res.flushHeaders).toHaveBeenCalled();
+        expect(res.write).toHaveBeenCalledWith(': connected\n\n');
 
         measurementCreated$.next({ date: '2026-01-01T00:00:00.000Z' });
         expect(res.write).toHaveBeenCalledWith('event: measurement\n');

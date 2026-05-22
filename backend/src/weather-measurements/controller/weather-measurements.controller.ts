@@ -17,9 +17,11 @@ export class WeatherMeasurementsController {
     @Get('stream')
     streamMeasurements(@Req() req: Request, @Res() res: Response): void {
         res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
         res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
         res.flushHeaders();
+        res.write(': connected\n\n');
 
         const subscription =
             this.weatherMeasurementsEventsService.measurementCreated$.subscribe(
