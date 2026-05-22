@@ -22,13 +22,15 @@ export class WeatherMeasurementsController {
     ) {
         if (query.from && query.to) {
             return this.weatherMeasurementsService.getAggregatedWeatherMeasurements(
-                { from: new Date(query.from), to: new Date(query.to) },
-                query.type,
+                {
+                    from: new Date(query.from),
+                    to: new Date(query.to),
+                    type: query.type,
+                },
             );
         }
         return this.weatherMeasurementsService.getAggregatedWeatherMeasurements(
-            { period: query.period! },
-            query.type,
+            { period: query.period!, type: query.type },
         );
     }
 

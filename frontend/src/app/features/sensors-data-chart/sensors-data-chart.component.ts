@@ -26,6 +26,7 @@ import { toChartPoints } from '@/core/utils/sensors-data.util';
 import { formatTooltipDate } from '@/core/utils/formatter.util';
 import { SensorTypeTabsComponent } from './sensor-type-tabs/sensor-type-tabs.component';
 import { PeriodSelectComponent } from './period-select/period-select.component';
+import { AggregatedDataParams } from '@/core/models/aggregated-data-params.model';
 
 @Component({
   selector: 'app-sensors-data-chart',
@@ -64,34 +65,22 @@ export class SensorsDataChartComponent {
 
   protected readonly isCustomMode = computed(() => this.period() === SensorDataPeriod.Custom);
 
-  private readonly params = computed(
-    ():
-      | { type: SensorType; period: SensorDataPeriod }
-      | { type: SensorType; from: Date; to: Date }
-      | null => {
-      const period = this.period();
-      const type = this.sensorType();
-      if (period === SensorDataPeriod.Custom) {
-        const from = this.dateFrom();
-        const to = this.dateTo();
-        if (!from || !to) return null;
-        return { type, from, to };
-      }
-      return { type, period };
-    },
-  );
+  private readonly params = computed((): AggregatedDataParams | null => {
+    const period = this.period();
+    const type = this.sensorType();
+    if (period === SensorDataPeriod.Custom) {
+      const from = this.dateFrom();
+      const to = this.dateTo();
+      if (!from || !to) return null;
+      return { type, from, to };
+    }
+    return { type, period };
+  });
 
   protected readonly rawData = toSignal(
     toObservable(this.params).pipe(
       filter((p) => p !== null),
-      switchMap((p) => {
-        if ('from' in p) {
-          return this.sensorsDataService
-            .getAggregatedData(p.from, p.to, p.type)
-            .pipe(startWith(null));
-        }
-        return this.sensorsDataService.getAggregatedData(p.period, p.type).pipe(startWith(null));
-      }),
+      switchMap((p) => this.sensorsDataService.getAggregatedData(p).pipe(startWith(null))),
     ),
     { initialValue: null },
   );

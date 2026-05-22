@@ -11,7 +11,6 @@ import {
 import {
   SensorCardComponent,
   type SensorCardConfig,
-  type SensorCardRow,
 } from './sensor-card/sensor-card.component';
 
 @Component({

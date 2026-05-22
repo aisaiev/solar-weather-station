@@ -5,6 +5,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { asc, between, desc, sql } from 'drizzle-orm';
 import { WeatherMeasurementsPeriod } from '../dto/weather-measurements-period.enum';
 import { WeatherMeasurementType } from '../dto/weather-measurment-type.enum';
+import { AggregatedWeatherMeasurementsParams } from '../dto/aggregated-weather-measurements.params';
 
 @Injectable()
 export class WeatherMeasurementsService {
@@ -67,10 +68,7 @@ export class WeatherMeasurementsService {
     }
 
     async getAggregatedWeatherMeasurements(
-        params:
-            | { period: WeatherMeasurementsPeriod }
-            | { from: Date; to: Date },
-        type: WeatherMeasurementType,
+        params: AggregatedWeatherMeasurementsParams,
     ) {
         let from: Date;
         let till: Date;
@@ -115,7 +113,7 @@ export class WeatherMeasurementsService {
             [WeatherMeasurementType.SolarPanelPower]:
                 schema.weatherMeasurements.solarPanelPower,
         } satisfies Record<WeatherMeasurementType, unknown>;
-        const column = sensorColumns[type];
+        const column = sensorColumns[params.type];
         // Epoch-based bucketing works for any interval size (date_trunc only accepts single units)
         const s = sql.raw(String(bucketSeconds));
         const bucketExpr = sql<string>`to_timestamp(floor(extract(epoch from ${schema.weatherMeasurements.date}) / ${s}) * ${s})`;

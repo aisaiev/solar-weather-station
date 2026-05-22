@@ -4,8 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SensorsData } from '@/core/models/sensors-data.model';
 import { AggregatedDataPoint } from '@/core/models/aggregated-data-point.model';
-import { SensorDataPeriod } from '@/core/models/sensor-data-period.enum';
-import { SensorType } from '@/core/models/sensor-type.enum';
+import { AggregatedDataParams } from '@/core/models/aggregated-data-params.model';
 
 @Injectable({ providedIn: 'root' })
 export class SensorsDataService {
@@ -16,27 +15,21 @@ export class SensorsDataService {
     return this.http.get<SensorsData>(`${this.baseUrl}/weather-measurements/latest`);
   }
 
-  getAggregatedData(period: SensorDataPeriod, type: SensorType): Observable<AggregatedDataPoint[]>;
-  getAggregatedData(from: Date, to: Date, type: SensorType): Observable<AggregatedDataPoint[]>;
-  getAggregatedData(
-    periodOrFrom: SensorDataPeriod | Date,
-    typeOrTo: SensorType | Date,
-    type?: SensorType,
-  ): Observable<AggregatedDataPoint[]> {
-    if (periodOrFrom instanceof Date) {
+  getAggregatedData(params: AggregatedDataParams): Observable<AggregatedDataPoint[]> {
+    if ('from' in params) {
       return this.http.get<AggregatedDataPoint[]>(
         `${this.baseUrl}/weather-measurements/aggregated`,
         {
           params: {
-            from: (periodOrFrom as Date).toISOString(),
-            to: (typeOrTo as Date).toISOString(),
-            type: type!,
+            from: params.from.toISOString(),
+            to: params.to.toISOString(),
+            type: params.type,
           },
         },
       );
     }
     return this.http.get<AggregatedDataPoint[]>(`${this.baseUrl}/weather-measurements/aggregated`, {
-      params: { period: periodOrFrom, type: typeOrTo as SensorType },
+      params: { period: params.period, type: params.type },
     });
   }
 }
