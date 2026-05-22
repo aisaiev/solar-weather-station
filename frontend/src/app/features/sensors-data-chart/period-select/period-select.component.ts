@@ -8,12 +8,12 @@ interface PeriodOption {
 }
 
 @Component({
-  selector: 'app-period-tabs',
+  selector: 'app-period-select',
   imports: [ZardSelectImports],
-  templateUrl: './period-tabs.component.html',
+  templateUrl: './period-select.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PeriodTabsComponent {
+export class PeriodSelectComponent {
   readonly selectedChange = output<SensorDataPeriod>();
 
   protected readonly selectedValue = signal<SensorDataPeriod>(SensorDataPeriod.Day);

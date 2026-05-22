@@ -25,7 +25,7 @@ import { ChartPoint } from '@/core/models/chart-point.model';
 import { toChartPoints } from '@/core/utils/sensors-data.util';
 import { formatTooltipDate } from '@/core/utils/formatter.util';
 import { SensorTypeTabsComponent } from './sensor-type-tabs/sensor-type-tabs.component';
-import { PeriodTabsComponent } from './period-tabs/period-tabs.component';
+import { PeriodSelectComponent } from './period-select/period-select.component';
 
 @Component({
   selector: 'app-sensors-data-chart',
@@ -35,7 +35,7 @@ import { PeriodTabsComponent } from './period-tabs/period-tabs.component';
     ZardDatePickerComponent,
     BaseChartDirective,
     SensorTypeTabsComponent,
-    PeriodTabsComponent,
+    PeriodSelectComponent,
   ],
   providers: [
     provideCharts({
