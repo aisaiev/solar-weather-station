@@ -99,7 +99,7 @@ describe('WeatherMeasurements (e2e)', () => {
     });
 
     describe('GET /api/weather-measurements/aggregated', () => {
-        it('should return 200 with aggregated data for valid params', async () => {
+        it('should return 200 with aggregated data for valid period params', async () => {
             const mockData = [
                 {
                     bucket: '2024-01-01T00:00:00Z',
@@ -118,10 +118,44 @@ describe('WeatherMeasurements (e2e)', () => {
             expect(Array.isArray(res.body)).toBe(true);
         });
 
-        it('should return 400 for invalid query params', async () => {
+        it('should return 200 with aggregated data for valid custom range', async () => {
+            const mockData = [
+                {
+                    bucket: '2026-01-01T00:00:00Z',
+                    avg: 18.1,
+                    min: 15.2,
+                    max: 22.4,
+                },
+            ];
+            mockOrderBy.mockResolvedValueOnce(mockData);
+
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/aggregated')
+                .query({
+                    from: '2026-01-01T00:00:00.000Z',
+                    to: '2026-01-05T00:00:00.000Z',
+                    type: 'temperature',
+                });
+
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body)).toBe(true);
+        });
+
+        it('should return 400 for invalid aggregated query params', async () => {
             const res = await request(app.getHttpServer())
                 .get('/api/weather-measurements/aggregated')
                 .query({ period: 'bad', type: 'humidity' });
+
+            expect(res.status).toBe(400);
+        });
+
+        it('should return 400 when custom aggregated range misses to', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/aggregated')
+                .query({
+                    from: '2026-01-01T00:00:00.000Z',
+                    type: 'temperature',
+                });
 
             expect(res.status).toBe(400);
         });
@@ -152,6 +186,69 @@ describe('WeatherMeasurements (e2e)', () => {
             );
 
             expect(res.status).toBe(200);
+        });
+    });
+
+    describe('GET /api/weather-measurements/export', () => {
+        it('should return CSV for scope=all period export', async () => {
+            mockFindMany.mockResolvedValueOnce([
+                {
+                    date: new Date('2026-01-01T00:00:00.000Z'),
+                    temperature: 20.5,
+                    humidity: 60,
+                },
+            ]);
+
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/export')
+                .query({ period: 'day', scope: 'all' });
+
+            expect(res.status).toBe(200);
+            expect(res.headers['content-type']).toContain('text/csv');
+            expect(res.text).toContain('temperature');
+            expect(res.text).toContain('humidity');
+        });
+
+        it('should return CSV for scope=selected custom export', async () => {
+            mockFindMany.mockResolvedValueOnce([
+                {
+                    date: new Date('2026-01-01T00:00:00.000Z'),
+                    pressure: 1001.2,
+                },
+            ]);
+
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/export')
+                .query({
+                    from: '2026-01-01T00:00:00.000Z',
+                    to: '2026-01-03T00:00:00.000Z',
+                    scope: 'selected',
+                    type: 'pressure',
+                });
+
+            expect(res.status).toBe(200);
+            expect(res.headers['content-type']).toContain('text/csv');
+            expect(res.text).toContain('pressure');
+        });
+
+        it('should return 400 when selected scope misses type', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/export')
+                .query({ period: 'day', scope: 'selected' });
+
+            expect(res.status).toBe(400);
+        });
+
+        it('should return 400 for invalid export enum/date combination', async () => {
+            const res = await request(app.getHttpServer())
+                .get('/api/weather-measurements/export')
+                .query({
+                    from: 'not-iso',
+                    to: '2026-01-03T00:00:00.000Z',
+                    scope: 'all',
+                });
+
+            expect(res.status).toBe(400);
         });
     });
 });

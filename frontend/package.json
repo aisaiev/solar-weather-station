@@ -38,6 +38,7 @@
     "@angular/cli": "^21.2.12",
     "@angular/compiler-cli": "^21.2.0",
     "@tailwindcss/postcss": "^4.3.0",
+    "@vitest/coverage-v8": "^4.1.7",
     "eslint": "^10.4.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jsdom": "^28.0.0",
@@ -46,5 +47,13 @@
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.59.4",
     "vitest": "^4.0.8"
+  },
+  "vitest": {
+    "coverage": {
+      "thresholds": {
+        "statements": 60,
+        "branches": 50
+      }
+    }
   }
 }

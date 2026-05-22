@@ -23,7 +23,6 @@ const mockConfigService = {
         };
         return config[key];
     }),
-    getOrThrow: jest.fn().mockReturnValue('mock-value'),
 };
 
 const mockWeatherMeasurementsService = {
@@ -35,6 +34,15 @@ describe('MqttService', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        mockConfigService.get.mockImplementation((key: string) => {
+            const config: Record<string, string | number> = {
+                [EnvironmentVariables.MQTT_ENABLED]: 'true',
+                [EnvironmentVariables.MQTT_HOST]: 'localhost',
+                [EnvironmentVariables.MQTT_PORT]: 1883,
+                [EnvironmentVariables.MQTT_TOPIC]: 'weather/data',
+            };
+            return config[key];
+        });
         (mqtt.connect as jest.Mock).mockReturnValue(mockMqttClient);
 
         const module: TestingModule = await Test.createTestingModule({
@@ -56,6 +64,21 @@ describe('MqttService', () => {
     });
 
     describe('onModuleInit', () => {
+        it('should skip connect when MQTT is disabled', () => {
+            mockConfigService.get.mockImplementation((key: string) => {
+                if (key === EnvironmentVariables.MQTT_ENABLED) return 'false';
+                return undefined;
+            });
+            const warnSpy = jest.spyOn((service as any).logger, 'warn');
+
+            service.onModuleInit();
+
+            expect(warnSpy).toHaveBeenCalledWith(
+                'MQTT is disabled, skipping connection',
+            );
+            expect(mqtt.connect).not.toHaveBeenCalled();
+        });
+
         it('should connect to MQTT broker with host and port from config', () => {
             service.onModuleInit();
 
@@ -82,17 +105,29 @@ describe('MqttService', () => {
             );
         });
 
-        it('should subscribe to the configured MQTT topic on connect', () => {
+        it('should subscribe to topic and log connect/disconnect callbacks', () => {
             service.onModuleInit();
+            const debugSpy = jest.spyOn((service as any).logger, 'debug');
 
             const connectHandler = (
                 mockMqttClient.on.mock.calls as [string, () => void][]
             ).find(([event]) => event === 'connect')![1];
+            const disconnectHandler = (
+                mockMqttClient.on.mock.calls as [string, () => void][]
+            ).find(([event]) => event === 'disconnect')![1];
+
             connectHandler();
+            disconnectHandler();
 
             expect(mockSubscribe).toHaveBeenCalledWith(
                 'weather/data',
                 expect.any(Function),
+            );
+            expect(debugSpy).toHaveBeenCalledWith(
+                'Connected to MQTT broker localhost',
+            );
+            expect(debugSpy).toHaveBeenCalledWith(
+                'Disconnected from MQTT broker localhost',
             );
         });
 
@@ -104,6 +139,16 @@ describe('MqttService', () => {
             ) => void;
 
             beforeEach(() => {
+                mockConfigService.get.mockImplementation((key: string) => {
+                    const config: Record<string, string | number> = {
+                        [EnvironmentVariables.MQTT_ENABLED]: 'true',
+                        [EnvironmentVariables.MQTT_HOST]: 'localhost',
+                        [EnvironmentVariables.MQTT_PORT]: 1883,
+                        [EnvironmentVariables.MQTT_TOPIC]: 'weather/data',
+                    };
+                    return config[key];
+                });
+
                 service.onModuleInit();
                 messageHandler = (
                     mockMqttClient.on.mock.calls as [
@@ -113,7 +158,7 @@ describe('MqttService', () => {
                 ).find(([event]) => event === 'message')![1];
             });
 
-            it('should call createWeatherMeasurement for a valid non-retained message', async () => {
+            it('should call createWeatherMeasurement for valid non-retained payload', async () => {
                 const payload = {
                     temperature: 22.5,
                     humidity: 60,
@@ -154,7 +199,6 @@ describe('MqttService', () => {
             });
 
             it('should not call createWeatherMeasurement when payload fails validation', async () => {
-                // mcu must be a string, so passing a number should fail validation
                 const invalidPayload = { mcu: 123 };
                 messageHandler(
                     'weather/data',
@@ -164,6 +208,19 @@ describe('MqttService', () => {
 
                 await new Promise(process.nextTick);
 
+                expect(
+                    mockWeatherMeasurementsService.createWeatherMeasurement,
+                ).not.toHaveBeenCalled();
+            });
+
+            it('should throw for malformed JSON payload', () => {
+                expect(() =>
+                    messageHandler(
+                        'weather/data',
+                        Buffer.from('{invalid-json'),
+                        { retain: false },
+                    ),
+                ).toThrow(SyntaxError);
                 expect(
                     mockWeatherMeasurementsService.createWeatherMeasurement,
                 ).not.toHaveBeenCalled();

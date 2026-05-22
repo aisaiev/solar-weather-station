@@ -77,8 +77,18 @@
       "^src/(.*)$": "<rootDir>/$1"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "**/*.(t|j)s",
+      "!main.ts",
+      "!**/*.module.ts",
+      "!config/**",
+      "!weather-measurements/schema.ts"
     ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 75,
+        "branches": 65
+      }
+    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
