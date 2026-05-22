@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted
     environment: development
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           touch .env
           echo DATABASE_URL="${{ secrets.DATABASE_URL }}" >> .env
