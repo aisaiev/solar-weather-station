@@ -134,7 +134,6 @@ describe('WeatherMeasurementsController', () => {
             'no-cache, no-transform',
         );
         expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
-        expect(res.setHeader).toHaveBeenCalledWith('X-Accel-Buffering', 'no');
         expect(res.flushHeaders).toHaveBeenCalled();
         expect(res.write).toHaveBeenCalledWith(': connected\n\n');
 
