@@ -1,8 +1,4 @@
-import {
-  Overlay,
-  OverlayPositionBuilder,
-  type OverlayRef,
-} from '@angular/cdk/overlay';
+import { Overlay, OverlayPositionBuilder, type OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { isPlatformBrowser } from '@angular/common';
 import {
