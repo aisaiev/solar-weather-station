@@ -73,6 +73,28 @@ describe('SensorsDataService', () => {
     expect(source.closed).toBe(true);
   });
 
+  it('streamLatestData should share one EventSource across subscribers', () => {
+    const nextSpyA = vi.fn();
+    const nextSpyB = vi.fn();
+
+    const subscriptionA = service.streamLatestData().subscribe(nextSpyA);
+    const subscriptionB = service.streamLatestData().subscribe(nextSpyB);
+
+    expect(MockEventSource.instances).toHaveLength(1);
+    const source = MockEventSource.instances[0];
+
+    source.emit('measurement', JSON.stringify({ date: '2026-01-01T00:00:00.000Z' }));
+
+    expect(nextSpyA).toHaveBeenCalledWith({ date: '2026-01-01T00:00:00.000Z' });
+    expect(nextSpyB).toHaveBeenCalledWith({ date: '2026-01-01T00:00:00.000Z' });
+
+    subscriptionA.unsubscribe();
+    expect(source.closed).toBe(false);
+
+    subscriptionB.unsubscribe();
+    expect(source.closed).toBe(true);
+  });
+
   it('getLatestData should call latest endpoint', () => {
     service.getLatestData().subscribe();
 

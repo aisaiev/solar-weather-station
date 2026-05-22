@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, share } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SensorsData } from '@/core/models/sensors-data.model';
 import { AggregatedDataPoint } from '@/core/models/aggregated-data-point.model';
@@ -11,28 +11,29 @@ import { ExportCsvParams } from '@/core/models/export-csv-params.model';
 export class SensorsDataService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.serverApiUrl;
+  private readonly latestDataStream$ = new Observable<SensorsData>((observer) => {
+    const source = new EventSource(`${this.baseUrl}/weather-measurements/stream`);
+
+    source.addEventListener('measurement', (event) => {
+      const messageEvent = event as MessageEvent<string>;
+      observer.next(JSON.parse(messageEvent.data) as SensorsData);
+    });
+
+    source.onerror = () => {
+      // Keep connection alive and rely on EventSource built-in reconnect.
+    };
+
+    return () => {
+      source.close();
+    };
+  }).pipe(share());
 
   getLatestData(): Observable<SensorsData> {
     return this.http.get<SensorsData>(`${this.baseUrl}/weather-measurements/latest`);
   }
 
   streamLatestData(): Observable<SensorsData> {
-    return new Observable<SensorsData>((observer) => {
-      const source = new EventSource(`${this.baseUrl}/weather-measurements/stream`);
-
-      source.addEventListener('measurement', (event) => {
-        const messageEvent = event as MessageEvent<string>;
-        observer.next(JSON.parse(messageEvent.data) as SensorsData);
-      });
-
-      source.onerror = () => {
-        // Keep connection alive and rely on EventSource built-in reconnect.
-      };
-
-      return () => {
-        source.close();
-      };
-    });
+    return this.latestDataStream$;
   }
 
   getAggregatedData(params: AggregatedDataParams): Observable<AggregatedDataPoint[]> {
