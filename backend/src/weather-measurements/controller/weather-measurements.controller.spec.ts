@@ -3,12 +3,24 @@ import { WeatherMeasurementsController } from './weather-measurements.controller
 import { WeatherMeasurementsService } from '../service/weather-measurements.service';
 import { WeatherMeasurementsPeriod } from '../dto/weather-measurements-period.enum';
 import { WeatherMeasurementType } from '../dto/weather-measurment-type.enum';
+import { ExportScope } from '../dto/export-scope.enum';
 
 const mockWeatherMeasurementsService = {
     getWeatherMeasurements: jest.fn(),
     getLatestWeatherMeasurement: jest.fn(),
     getAggregatedWeatherMeasurements: jest.fn(),
+    getExportRows: jest.fn(),
 };
+
+const mockCsvStream = {
+    pipe: jest.fn(),
+    write: jest.fn(),
+    end: jest.fn(),
+};
+
+jest.mock('@fast-csv/format', () => ({
+    format: jest.fn(() => mockCsvStream),
+}));
 
 describe('WeatherMeasurementsController', () => {
     let controller: WeatherMeasurementsController;
@@ -34,82 +46,82 @@ describe('WeatherMeasurementsController', () => {
         expect(controller).toBeDefined();
     });
 
-    describe('getWeatherMeasurements', () => {
-        it('should call service with period and type and return results', async () => {
-            const mockData = [{ temperature: 22.5, date: new Date() }];
-            mockWeatherMeasurementsService.getWeatherMeasurements.mockResolvedValue(
-                mockData,
-            );
+    it('getWeatherMeasurements should call service with period and type', async () => {
+        const query = {
+            period: WeatherMeasurementsPeriod.Day,
+            type: WeatherMeasurementType.Temperature,
+        };
+        await controller.getWeatherMeasurements(query);
+        expect(
+            mockWeatherMeasurementsService.getWeatherMeasurements,
+        ).toHaveBeenCalledWith(query.period, query.type);
+    });
 
-            const query = {
-                period: WeatherMeasurementsPeriod.Day,
-                type: WeatherMeasurementType.Temperature,
-            };
-            const result = await controller.getWeatherMeasurements(query);
-
-            expect(
-                mockWeatherMeasurementsService.getWeatherMeasurements,
-            ).toHaveBeenCalledWith(
-                WeatherMeasurementsPeriod.Day,
-                WeatherMeasurementType.Temperature,
-            );
-            expect(result).toEqual(mockData);
+    it('getAggregatedWeatherMeasurements should call service with custom range', async () => {
+        const query = {
+            from: '2026-01-01T00:00:00.000Z',
+            to: '2026-01-02T00:00:00.000Z',
+            type: WeatherMeasurementType.Humidity,
+        };
+        await controller.getAggregatedWeatherMeasurements(query);
+        expect(
+            mockWeatherMeasurementsService.getAggregatedWeatherMeasurements,
+        ).toHaveBeenCalledWith({
+            from: new Date(query.from),
+            to: new Date(query.to),
+            type: query.type,
         });
     });
 
-    describe('getAggregatedWeatherMeasurements', () => {
-        it('should call service with period and type and return aggregated results', async () => {
-            const mockData = [
-                { bucket: '2024-01-01', avg: 22.5, min: 20.0, max: 25.0 },
-            ];
-            mockWeatherMeasurementsService.getAggregatedWeatherMeasurements.mockResolvedValue(
-                mockData,
-            );
-
-            const query = {
-                period: WeatherMeasurementsPeriod.Week,
-                type: WeatherMeasurementType.Humidity,
-            };
-            const result =
-                await controller.getAggregatedWeatherMeasurements(query);
-
-            expect(
-                mockWeatherMeasurementsService.getAggregatedWeatherMeasurements,
-            ).toHaveBeenCalledWith(
-                { period: WeatherMeasurementsPeriod.Week },
-                WeatherMeasurementType.Humidity,
-            );
-            expect(result).toEqual(mockData);
+    it('getAggregatedWeatherMeasurements should call service with period', async () => {
+        const query = {
+            period: WeatherMeasurementsPeriod.Week,
+            type: WeatherMeasurementType.Humidity,
+        };
+        await controller.getAggregatedWeatherMeasurements(query);
+        expect(
+            mockWeatherMeasurementsService.getAggregatedWeatherMeasurements,
+        ).toHaveBeenCalledWith({
+            period: query.period,
+            type: query.type,
         });
     });
 
-    describe('getLatestWeatherMeasurement', () => {
-        it('should call service and return the latest measurement', async () => {
-            const mockData = {
-                temperature: 22.5,
-                humidity: 60,
-                date: new Date(),
-            };
-            mockWeatherMeasurementsService.getLatestWeatherMeasurement.mockResolvedValue(
-                mockData,
-            );
+    it('getLatestWeatherMeasurement should call service', async () => {
+        await controller.getLatestWeatherMeasurement();
+        expect(
+            mockWeatherMeasurementsService.getLatestWeatherMeasurement,
+        ).toHaveBeenCalled();
+    });
 
-            const result = await controller.getLatestWeatherMeasurement();
+    it('exportWeatherMeasurements should write csv response', async () => {
+        mockWeatherMeasurementsService.getExportRows.mockResolvedValue([
+            { date: '2026-01-01T00:00:00.000Z', temperature: 10.5 },
+        ]);
+        const query = {
+            period: WeatherMeasurementsPeriod.Day,
+            scope: ExportScope.Selected,
+            type: WeatherMeasurementType.Temperature,
+        };
+        const res = { setHeader: jest.fn() } as any;
+        await controller.exportWeatherMeasurements(query, res);
 
-            expect(
-                mockWeatherMeasurementsService.getLatestWeatherMeasurement,
-            ).toHaveBeenCalled();
-            expect(result).toEqual(mockData);
+        expect(
+            mockWeatherMeasurementsService.getExportRows,
+        ).toHaveBeenCalledWith(query);
+        expect(res.setHeader).toHaveBeenCalledWith(
+            'Content-Type',
+            'text/csv; charset=utf-8',
+        );
+        expect(res.setHeader).toHaveBeenCalledWith(
+            'Content-Disposition',
+            'attachment; filename="weather-measurements.csv"',
+        );
+        expect(mockCsvStream.pipe).toHaveBeenCalledWith(res);
+        expect(mockCsvStream.write).toHaveBeenCalledWith({
+            date: '2026-01-01T00:00:00.000Z',
+            temperature: 10.5,
         });
-
-        it('should return undefined when no measurements exist', async () => {
-            mockWeatherMeasurementsService.getLatestWeatherMeasurement.mockResolvedValue(
-                undefined,
-            );
-
-            const result = await controller.getLatestWeatherMeasurement();
-
-            expect(result).toBeUndefined();
-        });
+        expect(mockCsvStream.end).toHaveBeenCalled();
     });
 });

@@ -27,6 +27,10 @@ import { formatTooltipDate } from '@/core/utils/formatter.util';
 import { SensorTypeTabsComponent } from './sensor-type-tabs/sensor-type-tabs.component';
 import { PeriodSelectComponent } from './period-select/period-select.component';
 import { AggregatedDataParams } from '@/core/models/aggregated-data-params.model';
+import { ZardButtonComponent } from '@/shared/components/button';
+import { ExportScope } from '@/core/models/export-scope.enum';
+import { ExportCsvParams } from '@/core/models/export-csv-params.model';
+import { ZardDropdownImports } from '@/shared/components/dropdown';
 
 @Component({
   selector: 'app-sensors-data-chart',
@@ -37,6 +41,8 @@ import { AggregatedDataParams } from '@/core/models/aggregated-data-params.model
     BaseChartDirective,
     SensorTypeTabsComponent,
     PeriodSelectComponent,
+    ZardButtonComponent,
+    ZardDropdownImports,
   ],
   providers: [
     provideCharts({
@@ -64,6 +70,8 @@ export class SensorsDataChartComponent {
   protected readonly dateTo = signal<Date | null>(null);
 
   protected readonly isCustomMode = computed(() => this.period() === SensorDataPeriod.Custom);
+  protected readonly exportScopeEnum = ExportScope;
+  protected readonly isExporting = signal(false);
 
   private readonly params = computed((): AggregatedDataParams | null => {
     const period = this.period();
@@ -93,6 +101,11 @@ export class SensorsDataChartComponent {
   });
 
   protected readonly isLoading = computed(() => this.rawData() === null);
+  protected readonly canExport = computed(() => {
+    if (this.isExporting()) return false;
+    if (!this.isCustomMode()) return true;
+    return this.dateFrom() !== null && this.dateTo() !== null;
+  });
 
   protected readonly chartData = computed((): ChartPoint[] => {
     const raw = this.rawData();
@@ -263,5 +276,53 @@ export class SensorsDataChartComponent {
 
   protected onDateToChange(date: Date | null): void {
     this.dateTo.set(date);
+  }
+
+  protected onExportCsv(scope: ExportScope): void {
+    const params = this.buildExportParams(scope);
+    if (!params) return;
+
+    this.isExporting.set(true);
+    this.sensorsDataService.exportCsv(params).subscribe({
+      next: (blob) => {
+        const timestamp = this.formatFileTimestamp(new Date());
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `weather-export-${timestamp}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      },
+      complete: () => this.isExporting.set(false),
+      error: () => this.isExporting.set(false),
+    });
+  }
+
+  private buildExportParams(scope: ExportScope): ExportCsvParams | null {
+    const common = {
+      scope,
+      ...(scope === ExportScope.Selected ? { type: this.sensorType() } : {}),
+    };
+    const period = this.period();
+
+    if (period === SensorDataPeriod.Custom) {
+      const from = this.dateFrom();
+      const to = this.dateTo();
+      if (!from || !to) return null;
+      return { ...common, from, to };
+    }
+
+    return { ...common, period };
+  }
+
+  private formatFileTimestamp(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}${month}${day}-${hours}${minutes}`;
   }
 }

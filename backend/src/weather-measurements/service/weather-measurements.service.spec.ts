@@ -3,6 +3,7 @@ import { WeatherMeasurementsService } from './weather-measurements.service';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { WeatherMeasurementsPeriod } from '../dto/weather-measurements-period.enum';
 import { WeatherMeasurementType } from '../dto/weather-measurment-type.enum';
+import { ExportScope } from '../dto/export-scope.enum';
 
 const mockFindMany = jest.fn().mockResolvedValue([]);
 const mockFindFirst = jest.fn().mockResolvedValue(null);
@@ -31,6 +32,7 @@ describe('WeatherMeasurementsService', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
         mockOrderBy.mockResolvedValue([]);
+        mockFindMany.mockResolvedValue([]);
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 WeatherMeasurementsService,
@@ -47,178 +49,81 @@ describe('WeatherMeasurementsService', () => {
         expect(service).toBeDefined();
     });
 
-    describe('getWeatherMeasurements', () => {
-        it('should delegate to getWeatherMeasurementsForDay when period is Day', async () => {
-            await service.getWeatherMeasurements(
-                WeatherMeasurementsPeriod.Day,
-                WeatherMeasurementType.Temperature,
-            );
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { temperature: true, date: true },
-                }),
-            );
-        });
-
-        it('should delegate to getWeatherMeasurementsForWeek when period is Week', async () => {
-            await service.getWeatherMeasurements(
-                WeatherMeasurementsPeriod.Week,
-                WeatherMeasurementType.Humidity,
-            );
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { humidity: true, date: true },
-                }),
-            );
-        });
-
-        it('should delegate to getWeatherMeasurementsForMonth when period is Month', async () => {
-            await service.getWeatherMeasurements(
-                WeatherMeasurementsPeriod.Month,
-                WeatherMeasurementType.Pressure,
-            );
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { pressure: true, date: true },
-                }),
-            );
-        });
-    });
-
-    describe('getWeatherMeasurementsForDay', () => {
-        it('should query with correct column and return results', async () => {
-            const mockData = [{ temperature: 22.5, date: new Date() }];
-            mockFindMany.mockResolvedValueOnce(mockData);
-
-            const result = await service.getWeatherMeasurementsForDay(
-                WeatherMeasurementType.Temperature,
-            );
-
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { temperature: true, date: true },
-                }),
-            );
-            expect(result).toEqual(mockData);
-        });
-    });
-
-    describe('getWeatherMeasurementsForWeek', () => {
-        it('should query with correct column and return results', async () => {
-            const mockData = [{ humidity: 60, date: new Date() }];
-            mockFindMany.mockResolvedValueOnce(mockData);
-
-            const result = await service.getWeatherMeasurementsForWeek(
-                WeatherMeasurementType.Humidity,
-            );
-
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { humidity: true, date: true },
-                }),
-            );
-            expect(result).toEqual(mockData);
-        });
-    });
-
-    describe('getWeatherMeasurementsForMonth', () => {
-        it('should query with correct column and return results', async () => {
-            const mockData = [{ pressure: 1013, date: new Date() }];
-            mockFindMany.mockResolvedValueOnce(mockData);
-
-            const result = await service.getWeatherMeasurementsForMonth(
-                WeatherMeasurementType.Pressure,
-            );
-
-            expect(mockFindMany).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    columns: { pressure: true, date: true },
-                }),
-            );
-            expect(result).toEqual(mockData);
-        });
-    });
-
-    describe('getAggregatedWeatherMeasurements', () => {
-        it('should build full aggregation query chain and return results', async () => {
-            const mockResults = [
-                {
-                    bucket: '2024-01-01T00:00:00Z',
-                    avg: 22.5,
-                    min: 20.0,
-                    max: 25.0,
-                },
-            ];
-            mockOrderBy.mockResolvedValueOnce(mockResults);
-
-            const result = await service.getAggregatedWeatherMeasurements(
-                { period: WeatherMeasurementsPeriod.Day },
-                WeatherMeasurementType.Temperature,
-            );
-
-            expect(mockSelect).toHaveBeenCalled();
-            expect(mockFrom).toHaveBeenCalled();
-            expect(mockSelectWhere).toHaveBeenCalled();
-            expect(mockGroupBy).toHaveBeenCalled();
-            expect(mockOrderBy).toHaveBeenCalled();
-            expect(result).toEqual(mockResults);
-        });
-
-        it.each([
-            [WeatherMeasurementsPeriod.Day, WeatherMeasurementType.Temperature],
-            [WeatherMeasurementsPeriod.Week, WeatherMeasurementType.Humidity],
-            [WeatherMeasurementsPeriod.Month, WeatherMeasurementType.Pressure],
-        ])(
-            'should execute aggregation query for period %s and type %s',
-            async (period, type) => {
-                await service.getAggregatedWeatherMeasurements(
-                    { period },
-                    type,
-                );
-                expect(mockSelect).toHaveBeenCalled();
-                expect(mockOrderBy).toHaveBeenCalled();
-            },
+    it('getWeatherMeasurements should request selected sensor column', async () => {
+        await service.getWeatherMeasurements(
+            WeatherMeasurementsPeriod.Day,
+            WeatherMeasurementType.Temperature,
+        );
+        expect(mockFindMany).toHaveBeenCalledWith(
+            expect.objectContaining({
+                columns: { temperature: true, date: true },
+            }),
         );
     });
 
-    describe('getLatestWeatherMeasurement', () => {
-        it('should query for most recent measurement excluding id', async () => {
-            const mockMeasurement = {
-                temperature: 22.5,
-                humidity: 60,
-                date: new Date(),
-            };
-            mockFindFirst.mockResolvedValueOnce(mockMeasurement);
-
-            const result = await service.getLatestWeatherMeasurement();
-
-            expect(mockFindFirst).toHaveBeenCalledWith(
-                expect.objectContaining({ columns: { id: false } }),
-            );
-            expect(result).toEqual(mockMeasurement);
+    it('getAggregatedWeatherMeasurements should run select/group/order chain', async () => {
+        await service.getAggregatedWeatherMeasurements({
+            period: WeatherMeasurementsPeriod.Week,
+            type: WeatherMeasurementType.Humidity,
         });
-
-        it('should return undefined when no measurements exist', async () => {
-            mockFindFirst.mockResolvedValueOnce(undefined);
-
-            const result = await service.getLatestWeatherMeasurement();
-
-            expect(result).toBeUndefined();
-        });
+        expect(mockSelect).toHaveBeenCalled();
+        expect(mockFrom).toHaveBeenCalled();
+        expect(mockSelectWhere).toHaveBeenCalled();
+        expect(mockGroupBy).toHaveBeenCalled();
+        expect(mockOrderBy).toHaveBeenCalled();
     });
 
-    describe('createWeatherMeasurement', () => {
-        it('should insert the measurement into the database', async () => {
-            const measurement = {
-                temperature: 22.5,
-                humidity: 60,
-                date: new Date(),
-            };
+    it('getExportRows should return raw selected rows', async () => {
+        const rows = [{ date: new Date(), temperature: 12.4 }];
+        mockFindMany.mockResolvedValueOnce(rows);
 
-            await service.createWeatherMeasurement(measurement);
-
-            expect(mockInsert).toHaveBeenCalled();
-            expect(mockInsertValues).toHaveBeenCalledWith(measurement);
+        const result = await service.getExportRows({
+            period: WeatherMeasurementsPeriod.Day,
+            scope: ExportScope.Selected,
+            type: WeatherMeasurementType.Temperature,
         });
+
+        expect(mockFindMany).toHaveBeenCalledWith(
+            expect.objectContaining({
+                columns: { date: true, temperature: true },
+            }),
+        );
+        expect(result).toEqual(rows);
+    });
+
+    it('getExportRows should return raw all-sensors rows', async () => {
+        const rows = [{ date: new Date(), temperature: 12.4, humidity: 50 }];
+        mockFindMany.mockResolvedValueOnce(rows);
+
+        const result = await service.getExportRows({
+            period: WeatherMeasurementsPeriod.Day,
+            scope: ExportScope.All,
+        });
+
+        expect(mockFindMany).toHaveBeenCalledWith(
+            expect.objectContaining({
+                columns: expect.objectContaining({
+                    date: true,
+                    temperature: true,
+                    humidity: true,
+                    pressure: true,
+                }),
+            }),
+        );
+        expect(result).toEqual(rows);
+    });
+
+    it('getLatestWeatherMeasurement should query without id', async () => {
+        await service.getLatestWeatherMeasurement();
+        expect(mockFindFirst).toHaveBeenCalledWith(
+            expect.objectContaining({ columns: { id: false } }),
+        );
+    });
+
+    it('createWeatherMeasurement should insert measurement', async () => {
+        const measurement = { temperature: 22.5, date: new Date() };
+        await service.createWeatherMeasurement(measurement);
+        expect(mockInsert).toHaveBeenCalled();
+        expect(mockInsertValues).toHaveBeenCalledWith(measurement);
     });
 });

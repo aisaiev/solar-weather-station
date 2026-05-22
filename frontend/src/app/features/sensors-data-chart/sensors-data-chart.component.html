@@ -1,24 +1,51 @@
 <z-card zTitle="Historical Data">
   <div class="flex flex-col gap-4">
     <app-sensor-type-tabs (selectedChange)="onSensorTypeChange($event)" />
-    <div class="flex flex-wrap items-center gap-3">
-      <app-period-select (selectedChange)="onPeriodChange($event)" />
-      @if (isCustomMode()) {
-        <z-date-picker
-          placeholder="From"
-          [value]="dateFrom()"
-          zFormat="MMM d, yyyy"
-          [maxDate]="dateTo()"
-          (dateChange)="onDateFromChange($event)"
-        />
-        <z-date-picker
-          placeholder="To"
-          [value]="dateTo()"
-          zFormat="MMM d, yyyy"
-          [minDate]="dateFrom()"
-          (dateChange)="onDateToChange($event)"
-        />
-      }
+    <div class="flex flex-col gap-3 md:flex-row md:items-start">
+      <div class="flex flex-wrap items-center gap-3">
+        <app-period-select (selectedChange)="onPeriodChange($event)" />
+        @if (isCustomMode()) {
+          <z-date-picker
+            placeholder="From"
+            [value]="dateFrom()"
+            zFormat="MMM d, yyyy"
+            [maxDate]="dateTo()"
+            (dateChange)="onDateFromChange($event)"
+          />
+          <z-date-picker
+            placeholder="To"
+            [value]="dateTo()"
+            zFormat="MMM d, yyyy"
+            [minDate]="dateFrom()"
+            (dateChange)="onDateToChange($event)"
+          />
+        }
+      </div>
+
+      <div class="flex flex-col gap-2 md:ml-auto md:items-end">
+        <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-end">
+          <button
+            z-button
+            zType="outline"
+            zSize="lg"
+            class="self-start sm:self-auto"
+            z-dropdown
+            [zDropdownMenu]="exportMenu"
+            [zLoading]="isExporting()"
+            [zDisabled]="!canExport()"
+          >
+            Export
+          </button>
+          <z-dropdown-menu-content #exportMenu="zDropdownMenuContent">
+            <z-dropdown-menu-item (click)="onExportCsv(exportScopeEnum.Selected)">
+              Export selected sensor
+            </z-dropdown-menu-item>
+            <z-dropdown-menu-item (click)="onExportCsv(exportScopeEnum.All)">
+              Export all sensors
+            </z-dropdown-menu-item>
+          </z-dropdown-menu-content>
+        </div>
+      </div>
     </div>
     <div class="relative h-72">
       @if (isLoading()) {

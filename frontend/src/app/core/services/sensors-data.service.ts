@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { SensorsData } from '@/core/models/sensors-data.model';
 import { AggregatedDataPoint } from '@/core/models/aggregated-data-point.model';
 import { AggregatedDataParams } from '@/core/models/aggregated-data-params.model';
+import { ExportCsvParams } from '@/core/models/export-csv-params.model';
 
 @Injectable({ providedIn: 'root' })
 export class SensorsDataService {
@@ -31,5 +32,28 @@ export class SensorsDataService {
     return this.http.get<AggregatedDataPoint[]>(`${this.baseUrl}/weather-measurements/aggregated`, {
       params: { period: params.period, type: params.type },
     });
+  }
+
+  exportCsv(params: ExportCsvParams): Observable<Blob> {
+    if ('from' in params) {
+      return this.http.get(`${this.baseUrl}/weather-measurements/export`, {
+        params: {
+          from: params.from.toISOString(),
+          to: params.to.toISOString(),
+          scope: params.scope,
+          ...(params.type ? { type: params.type } : {}),
+        },
+        responseType: 'blob',
+      }) as Observable<Blob>;
+    }
+
+    return this.http.get(`${this.baseUrl}/weather-measurements/export`, {
+      params: {
+        period: params.period,
+        scope: params.scope,
+        ...(params.type ? { type: params.type } : {}),
+      },
+      responseType: 'blob',
+    }) as Observable<Blob>;
   }
 }
