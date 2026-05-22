@@ -110,6 +110,7 @@ describe('WeatherMeasurementsController', () => {
     });
 
     it('streamMeasurements should set SSE headers and write events', () => {
+        jest.useFakeTimers();
         const closeHandlers: Array<() => void> = [];
         const req = {
             on: jest.fn((event: string, handler: () => void) => {
@@ -137,6 +138,9 @@ describe('WeatherMeasurementsController', () => {
         expect(res.flushHeaders).toHaveBeenCalled();
         expect(res.write).toHaveBeenCalledWith(': connected\n\n');
 
+        jest.advanceTimersByTime(15000);
+        expect(res.write).toHaveBeenCalledWith(': ping\n\n');
+
         measurementCreated$.next({ date: '2026-01-01T00:00:00.000Z' });
         expect(res.write).toHaveBeenCalledWith('event: measurement\n');
         expect(res.write).toHaveBeenCalledWith(
@@ -145,6 +149,7 @@ describe('WeatherMeasurementsController', () => {
 
         closeHandlers.forEach((handler) => handler());
         expect(res.end).toHaveBeenCalled();
+        jest.useRealTimers();
     });
 
     it('exportWeatherMeasurements should write csv response', async () => {

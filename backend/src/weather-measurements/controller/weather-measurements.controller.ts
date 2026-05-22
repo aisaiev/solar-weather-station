@@ -22,6 +22,10 @@ export class WeatherMeasurementsController {
         res.flushHeaders();
         res.write(': connected\n\n');
 
+        const heartbeat = setInterval(() => {
+            res.write(': ping\n\n');
+        }, 15000);
+
         const subscription =
             this.weatherMeasurementsEventsService.measurementCreated$.subscribe(
                 (measurement) => {
@@ -31,6 +35,7 @@ export class WeatherMeasurementsController {
             );
 
         req.on('close', () => {
+            clearInterval(heartbeat);
             subscription.unsubscribe();
             res.end();
         });
