@@ -30,6 +30,8 @@ describe('WeatherMeasurementsService', () => {
     let service: WeatherMeasurementsService;
 
     beforeEach(async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-03-15T12:00:00.000Z'));
         jest.clearAllMocks();
         mockOrderBy.mockResolvedValue([]);
         mockFindMany.mockResolvedValue([]);
@@ -44,6 +46,10 @@ describe('WeatherMeasurementsService', () => {
         service = module.get<WeatherMeasurementsService>(
             WeatherMeasurementsService,
         );
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     it('should be defined', () => {
@@ -92,6 +98,35 @@ describe('WeatherMeasurementsService', () => {
             expect.objectContaining({
                 columns: { temperature: true, date: true },
             }),
+        );
+    });
+
+    it('getAggregationConfig should produce expected period ranges and buckets', () => {
+        const getAggregationConfig = (
+            service as unknown as {
+                getAggregationConfig: (period: WeatherMeasurementsPeriod) => {
+                    from: Date;
+                    bucketSeconds: number;
+                };
+            }
+        ).getAggregationConfig.bind(service);
+
+        const now = Date.now();
+        const day = getAggregationConfig(WeatherMeasurementsPeriod.Day);
+        const week = getAggregationConfig(WeatherMeasurementsPeriod.Week);
+        const month = getAggregationConfig(WeatherMeasurementsPeriod.Month);
+
+        expect(day.bucketSeconds).toBe(900);
+        expect(week.bucketSeconds).toBe(3600);
+        expect(month.bucketSeconds).toBe(21600);
+
+        expect(now - day.from.getTime()).toBeCloseTo(24 * 60 * 60 * 1000, -4);
+        expect(now - week.from.getTime()).toBeCloseTo(
+            7 * 24 * 60 * 60 * 1000,
+            -4,
+        );
+        expect(now - month.from.getTime()).toBeGreaterThan(
+            27 * 24 * 60 * 60 * 1000,
         );
     });
 

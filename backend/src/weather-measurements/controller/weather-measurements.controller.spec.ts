@@ -124,4 +124,41 @@ describe('WeatherMeasurementsController', () => {
         });
         expect(mockCsvStream.end).toHaveBeenCalled();
     });
+
+    it('exportWeatherMeasurements should normalize Date values and move date to the end', async () => {
+        mockWeatherMeasurementsService.getExportRows.mockResolvedValue([
+            {
+                date: new Date('2026-01-01T00:00:00.000Z'),
+                temperature: 12.3,
+                capturedAt: new Date('2026-01-01T00:10:00.000Z'),
+            },
+        ]);
+        const query = {
+            period: WeatherMeasurementsPeriod.Day,
+            scope: ExportScope.All,
+        };
+        const res = { setHeader: jest.fn() } as any;
+
+        await controller.exportWeatherMeasurements(query, res);
+
+        const writeArg = mockCsvStream.write.mock.calls[0][0];
+        expect(writeArg).toEqual({
+            temperature: 12.3,
+            capturedAt: '2026-01-01T00:10:00.000Z',
+            date: '2026-01-01T00:00:00.000Z',
+        });
+    });
+
+    it('normalizeDateValues should keep object shape when no date key exists', () => {
+        const result = (
+            controller as unknown as {
+                normalizeDateValues: (row: object) => Record<string, unknown>;
+            }
+        ).normalizeDateValues({
+            temperature: 10.5,
+            humidity: 44,
+        });
+
+        expect(result).toEqual({ temperature: 10.5, humidity: 44 });
+    });
 });
