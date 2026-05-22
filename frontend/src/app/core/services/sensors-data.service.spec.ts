@@ -10,8 +10,37 @@ import { environment } from '../../../environments/environment';
 describe('SensorsDataService', () => {
   let service: SensorsDataService;
   let httpMock: HttpTestingController;
+  const originalEventSource = globalThis.EventSource;
+
+  class MockEventSource {
+    static instances: MockEventSource[] = [];
+    public readonly listeners = new Map<string, ((event: Event) => void)[]>();
+    public closed = false;
+
+    constructor(public readonly url: string) {
+      MockEventSource.instances.push(this);
+    }
+
+    addEventListener(type: string, listener: (event: Event) => void): void {
+      const current = this.listeners.get(type) ?? [];
+      this.listeners.set(type, [...current, listener]);
+    }
+
+    close(): void {
+      this.closed = true;
+    }
+
+    emit(type: string, data: string): void {
+      const callbacks = this.listeners.get(type) ?? [];
+      const event = { data } as MessageEvent<string>;
+      callbacks.forEach((callback) => callback(event as unknown as Event));
+    }
+  }
 
   beforeEach(() => {
+    MockEventSource.instances = [];
+    globalThis.EventSource = MockEventSource as unknown as typeof EventSource;
+
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],
     });
@@ -22,6 +51,26 @@ describe('SensorsDataService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    globalThis.EventSource = originalEventSource;
+  });
+
+  it('streamLatestData should emit parsed measurement and close source on unsubscribe', () => {
+    const nextSpy = vi.fn();
+    const subscription = service.streamLatestData().subscribe(nextSpy);
+
+    expect(MockEventSource.instances).toHaveLength(1);
+    const source = MockEventSource.instances[0];
+    expect(source.url).toBe(`${environment.serverApiUrl}/weather-measurements/stream`);
+
+    source.emit(
+      'measurement',
+      JSON.stringify({ date: '2026-01-01T00:00:00.000Z', temperature: 20 }),
+    );
+
+    expect(nextSpy).toHaveBeenCalledWith({ date: '2026-01-01T00:00:00.000Z', temperature: 20 });
+
+    subscription.unsubscribe();
+    expect(source.closed).toBe(true);
   });
 
   it('getLatestData should call latest endpoint', () => {

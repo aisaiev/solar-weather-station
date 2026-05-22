@@ -16,6 +16,25 @@ export class SensorsDataService {
     return this.http.get<SensorsData>(`${this.baseUrl}/weather-measurements/latest`);
   }
 
+  streamLatestData(): Observable<SensorsData> {
+    return new Observable<SensorsData>((observer) => {
+      const source = new EventSource(`${this.baseUrl}/weather-measurements/stream`);
+
+      source.addEventListener('measurement', (event) => {
+        const messageEvent = event as MessageEvent<string>;
+        observer.next(JSON.parse(messageEvent.data) as SensorsData);
+      });
+
+      source.onerror = () => {
+        // Keep connection alive and rely on EventSource built-in reconnect.
+      };
+
+      return () => {
+        source.close();
+      };
+    });
+  }
+
   getAggregatedData(params: AggregatedDataParams): Observable<AggregatedDataPoint[]> {
     if ('from' in params) {
       return this.http.get<AggregatedDataPoint[]>(

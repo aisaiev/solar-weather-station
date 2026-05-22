@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { SensorsDataChartComponent } from './sensors-data-chart.component';
 import { SensorsDataService } from '@/core/services/sensors-data.service';
 import { ThemeService } from '@/core/services/theme.service';
@@ -19,6 +19,7 @@ const mockSensorsDataService = {
     ]),
   ),
   exportCsv: vi.fn(() => of(new Blob(['csv']))),
+  streamLatestData: vi.fn(),
 };
 
 class MockThemeService {
@@ -40,6 +41,7 @@ describe('SensorsDataChartComponent', () => {
   let fixture: ComponentFixture<SensorsDataChartComponent>;
   let component: SensorsDataChartComponent;
   let getContextSpy: ReturnType<typeof vi.spyOn>;
+  let liveStream: Subject<{ date: string }>;
 
   beforeAll(() => {
     getContextSpy = vi
@@ -92,6 +94,11 @@ describe('SensorsDataChartComponent', () => {
   });
 
   beforeEach(async () => {
+    mockSensorsDataService.getAggregatedData.mockClear();
+    mockSensorsDataService.exportCsv.mockClear();
+    liveStream = new Subject<{ date: string }>();
+    mockSensorsDataService.streamLatestData.mockReturnValue(liveStream);
+
     TestBed.overrideComponent(SensorsDataChartComponent, {
       set: { template: '' },
     });
@@ -163,5 +170,23 @@ describe('SensorsDataChartComponent', () => {
     expect(invalidTitle).toBe('');
     expect(validAfterBody).toEqual(['Avg: 10', 'Min: 8', 'Max: 12']);
     expect(invalidAfterBody).toEqual([]);
+  });
+
+  it('should refetch aggregated data when live update arrives', () => {
+    expect(mockSensorsDataService.getAggregatedData).toHaveBeenCalledTimes(1);
+
+    liveStream.next({ date: '2026-01-01T01:00:00.000Z' });
+
+    expect(mockSensorsDataService.getAggregatedData).toHaveBeenCalledTimes(2);
+  });
+
+  it('should not fetch in custom mode until both dates are set, including after live updates', () => {
+    const c = component as unknown as ChartComponentTestApi;
+    c.onPeriodChange(SensorDataPeriod.Custom);
+    c.onDateFromChange(new Date('2026-01-01T00:00:00.000Z'));
+
+    liveStream.next({ date: '2026-01-01T02:00:00.000Z' });
+
+    expect(mockSensorsDataService.getAggregatedData).toHaveBeenCalledTimes(1);
   });
 });

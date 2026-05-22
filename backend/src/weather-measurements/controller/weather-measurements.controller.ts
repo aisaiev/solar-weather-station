@@ -1,15 +1,39 @@
-import { Controller, Get, Query, Res } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { WeatherMeasurementsService } from '../service/weather-measurements.service';
 import { GetWeatherMeasurementsQuery } from '../dto/get-weather-measurements.params';
 import { ExportWeatherMeasurementsQuery } from '../dto/export-weather-measurements.params';
 import { Response } from 'express';
 import { format } from '@fast-csv/format';
+import { Request } from 'express';
+import { WeatherMeasurementsEventsService } from '../service/weather-measurements-events.service';
 
 @Controller('weather-measurements')
 export class WeatherMeasurementsController {
     constructor(
         private readonly weatherMeasurementsService: WeatherMeasurementsService,
+        private readonly weatherMeasurementsEventsService: WeatherMeasurementsEventsService,
     ) {}
+
+    @Get('stream')
+    streamMeasurements(@Req() req: Request, @Res() res: Response): void {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.flushHeaders();
+
+        const subscription =
+            this.weatherMeasurementsEventsService.measurementCreated$.subscribe(
+                (measurement) => {
+                    res.write('event: measurement\n');
+                    res.write(`data: ${JSON.stringify(measurement)}\n\n`);
+                },
+            );
+
+        req.on('close', () => {
+            subscription.unsubscribe();
+            res.end();
+        });
+    }
 
     @Get()
     async getWeatherMeasurements(@Query() query: GetWeatherMeasurementsQuery) {

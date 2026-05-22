@@ -4,12 +4,22 @@ import { WeatherMeasurementsService } from '../service/weather-measurements.serv
 import { WeatherMeasurementsPeriod } from '../dto/weather-measurements-period.enum';
 import { WeatherMeasurementType } from '../dto/weather-measurment-type.enum';
 import { ExportScope } from '../dto/export-scope.enum';
+import { Subject } from 'rxjs';
+import { WeatherMeasurementsEventsService } from '../service/weather-measurements-events.service';
+import { Request, Response } from 'express';
 
 const mockWeatherMeasurementsService = {
     getWeatherMeasurements: jest.fn(),
     getLatestWeatherMeasurement: jest.fn(),
     getAggregatedWeatherMeasurements: jest.fn(),
     getExportRows: jest.fn(),
+};
+
+let measurementCreated$: Subject<{ date: string }>;
+const mockWeatherMeasurementsEventsService = {
+    get measurementCreated$() {
+        return measurementCreated$;
+    },
 };
 
 const mockCsvStream = {
@@ -27,12 +37,17 @@ describe('WeatherMeasurementsController', () => {
 
     beforeEach(async () => {
         jest.clearAllMocks();
+        measurementCreated$ = new Subject<{ date: string }>();
         const module: TestingModule = await Test.createTestingModule({
             controllers: [WeatherMeasurementsController],
             providers: [
                 {
                     provide: WeatherMeasurementsService,
                     useValue: mockWeatherMeasurementsService,
+                },
+                {
+                    provide: WeatherMeasurementsEventsService,
+                    useValue: mockWeatherMeasurementsEventsService,
                 },
             ],
         }).compile();
@@ -94,6 +109,40 @@ describe('WeatherMeasurementsController', () => {
         ).toHaveBeenCalled();
     });
 
+    it('streamMeasurements should set SSE headers and write events', () => {
+        const closeHandlers: Array<() => void> = [];
+        const req = {
+            on: jest.fn((event: string, handler: () => void) => {
+                if (event === 'close') closeHandlers.push(handler);
+            }),
+        } as unknown as Request;
+        const res = {
+            setHeader: jest.fn(),
+            flushHeaders: jest.fn(),
+            write: jest.fn(),
+            end: jest.fn(),
+        } as unknown as Response;
+
+        controller.streamMeasurements(req, res);
+
+        expect(res.setHeader).toHaveBeenCalledWith(
+            'Content-Type',
+            'text/event-stream',
+        );
+        expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-cache');
+        expect(res.setHeader).toHaveBeenCalledWith('Connection', 'keep-alive');
+        expect(res.flushHeaders).toHaveBeenCalled();
+
+        measurementCreated$.next({ date: '2026-01-01T00:00:00.000Z' });
+        expect(res.write).toHaveBeenCalledWith('event: measurement\n');
+        expect(res.write).toHaveBeenCalledWith(
+            'data: {"date":"2026-01-01T00:00:00.000Z"}\n\n',
+        );
+
+        closeHandlers.forEach((handler) => handler());
+        expect(res.end).toHaveBeenCalled();
+    });
+
     it('exportWeatherMeasurements should write csv response', async () => {
         mockWeatherMeasurementsService.getExportRows.mockResolvedValue([
             { date: '2026-01-01T00:00:00.000Z', temperature: 10.5 },
@@ -103,7 +152,9 @@ describe('WeatherMeasurementsController', () => {
             scope: ExportScope.Selected,
             type: WeatherMeasurementType.Temperature,
         };
-        const res = { setHeader: jest.fn() } as any;
+        const res = {
+            setHeader: jest.fn(),
+        } as unknown as Response;
         await controller.exportWeatherMeasurements(query, res);
 
         expect(
@@ -137,7 +188,9 @@ describe('WeatherMeasurementsController', () => {
             period: WeatherMeasurementsPeriod.Day,
             scope: ExportScope.All,
         };
-        const res = { setHeader: jest.fn() } as any;
+        const res = {
+            setHeader: jest.fn(),
+        } as unknown as Response;
 
         await controller.exportWeatherMeasurements(query, res);
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { startWith } from 'rxjs';
+import { merge, startWith, timer, map } from 'rxjs';
 import { SensorsDataService } from '@/core/services/sensors-data.service';
 import { SensorType } from '@/core/models/sensor-type.enum';
 import {
@@ -8,10 +8,7 @@ import {
   formatMeasurementDate,
   getKyivLocalTimeString,
 } from '@/core/utils/formatter.util';
-import {
-  SensorCardComponent,
-  type SensorCardConfig,
-} from './sensor-card/sensor-card.component';
+import { SensorCardComponent, type SensorCardConfig } from './sensor-card/sensor-card.component';
 
 @Component({
   selector: 'app-sensors-data-table',
@@ -23,15 +20,23 @@ export class SensorsDataTableComponent {
   private readonly sensorsDataService = inject(SensorsDataService);
 
   protected readonly data = toSignal(
-    this.sensorsDataService.getLatestData().pipe(startWith(null)),
+    merge(this.sensorsDataService.getLatestData(), this.sensorsDataService.streamLatestData()).pipe(
+      startWith(null),
+    ),
     { requireSync: true },
+  );
+
+  private readonly minuteTicker = toSignal(
+    timer(this.msUntilNextMinute(), 60_000).pipe(map(() => Date.now())),
+    { initialValue: Date.now() },
   );
 
   protected readonly isLoading = computed(() => this.data() === null);
 
-  protected readonly currentTime = computed(() =>
-    this.data() != null ? getKyivLocalTimeString() : '',
-  );
+  protected readonly currentTime = computed(() => {
+    this.minuteTicker();
+    return getKyivLocalTimeString();
+  });
   protected readonly lastUpdateTime = computed(() => {
     const date = this.data()?.date;
     return date ? formatMeasurementDate(date) : '';
@@ -139,4 +144,9 @@ export class SensorsDataTableComponent {
       ],
     },
   ]);
+
+  private msUntilNextMinute(): number {
+    const now = new Date();
+    return (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+  }
 }

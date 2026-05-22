@@ -3,6 +3,8 @@ import { MqttService } from './mqtt.service';
 import { ConfigService } from '@nestjs/config';
 import { WeatherMeasurementsService } from 'src/weather-measurements/service/weather-measurements.service';
 import { EnvironmentVariables } from 'src/config/app-config.consts';
+import { WeatherMeasurementsEventsService } from 'src/weather-measurements/service/weather-measurements-events.service';
+import { Logger } from '@nestjs/common';
 
 jest.mock('mqtt');
 import * as mqtt from 'mqtt';
@@ -29,6 +31,10 @@ const mockWeatherMeasurementsService = {
     createWeatherMeasurement: jest.fn().mockResolvedValue(undefined),
 };
 
+const mockWeatherMeasurementsEventsService = {
+    publishMeasurementCreated: jest.fn(),
+};
+
 describe('MqttService', () => {
     let service: MqttService;
 
@@ -53,6 +59,10 @@ describe('MqttService', () => {
                     provide: WeatherMeasurementsService,
                     useValue: mockWeatherMeasurementsService,
                 },
+                {
+                    provide: WeatherMeasurementsEventsService,
+                    useValue: mockWeatherMeasurementsEventsService,
+                },
             ],
         }).compile();
 
@@ -69,7 +79,8 @@ describe('MqttService', () => {
                 if (key === EnvironmentVariables.MQTT_ENABLED) return 'false';
                 return undefined;
             });
-            const warnSpy = jest.spyOn((service as any).logger, 'warn');
+            const logger = (service as unknown as { logger: Logger }).logger;
+            const warnSpy = jest.spyOn(logger, 'warn');
 
             service.onModuleInit();
 
@@ -107,7 +118,8 @@ describe('MqttService', () => {
 
         it('should subscribe to topic and log connect/disconnect callbacks', () => {
             service.onModuleInit();
-            const debugSpy = jest.spyOn((service as any).logger, 'debug');
+            const logger = (service as unknown as { logger: Logger }).logger;
+            const debugSpy = jest.spyOn(logger, 'debug');
 
             const connectHandler = (
                 mockMqttClient.on.mock.calls as [string, () => void][]
@@ -174,6 +186,16 @@ describe('MqttService', () => {
 
                 expect(
                     mockWeatherMeasurementsService.createWeatherMeasurement,
+                ).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        temperature: 22.5,
+                        humidity: 60,
+                        pressure: 1013,
+                        date: expect.any(Date),
+                    }),
+                );
+                expect(
+                    mockWeatherMeasurementsEventsService.publishMeasurementCreated,
                 ).toHaveBeenCalledWith(
                     expect.objectContaining({
                         temperature: 22.5,

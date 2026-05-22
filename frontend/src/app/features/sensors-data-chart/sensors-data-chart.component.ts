@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ThemeService } from '@/core/services/theme.service';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, startWith, filter } from 'rxjs';
+import { switchMap, startWith, filter, merge, map } from 'rxjs';
 import { BaseChartDirective, provideCharts } from 'ng2-charts';
 import {
   CategoryScale,
@@ -85,8 +85,13 @@ export class SensorsDataChartComponent {
     return { type, period };
   });
 
+  private readonly params$ = toObservable(this.params);
+  private readonly liveRefreshParams$ = this.sensorsDataService
+    .streamLatestData()
+    .pipe(map(() => this.params()));
+
   protected readonly rawData = toSignal(
-    toObservable(this.params).pipe(
+    merge(this.params$, this.liveRefreshParams$).pipe(
       filter((p) => p !== null),
       switchMap((p) => this.sensorsDataService.getAggregatedData(p).pipe(startWith(null))),
     ),

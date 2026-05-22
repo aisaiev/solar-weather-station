@@ -6,6 +6,7 @@ import { validate } from 'class-validator';
 import { WeatherMeasurementsMqttDto } from '../models/weather-measuremets-mqtt.dto';
 import { CreateWeatherMeasurementRequest } from 'src/weather-measurements/dto/create-weather-measurement.request';
 import { WeatherMeasurementsService } from 'src/weather-measurements/service/weather-measurements.service';
+import { WeatherMeasurementsEventsService } from 'src/weather-measurements/service/weather-measurements-events.service';
 
 @Injectable({})
 export class MqttService implements OnModuleInit {
@@ -15,6 +16,7 @@ export class MqttService implements OnModuleInit {
     constructor(
         private readonly configService: ConfigService,
         private readonly weatherMeasurementsService: WeatherMeasurementsService,
+        private readonly weatherMeasurementsEventsService: WeatherMeasurementsEventsService,
     ) {}
 
     onModuleInit(): void {
@@ -68,6 +70,9 @@ export class MqttService implements OnModuleInit {
                                 date: new Date(),
                             };
                         await this.weatherMeasurementsService.createWeatherMeasurement(
+                            weatherMeasurement,
+                        );
+                        this.weatherMeasurementsEventsService.publishMeasurementCreated(
                             weatherMeasurement,
                         );
                     } else {
