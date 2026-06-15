@@ -51,6 +51,7 @@ private:
   BH1750_WE _bh1750;
   INA226 _inaSolar;
   INA226 _inaBattery;
+  bool _bme280Ready = false;
 
   WiFiClient _wifiClient;
   PubSubClient _mqtt;
@@ -59,6 +60,8 @@ private:
 
   void initHardware();
   void initSensors();
+  bool initBme280();
+  bool readBme280(SensorData &d);
   void connectWifi();
   bool connectMqtt();
   void drainMqtt(uint32_t durationMs);

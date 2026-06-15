@@ -52,6 +52,15 @@ static constexpr uint32_t MQTT_TIMEOUT_MS = 5000;
 static constexpr uint32_t OTA_CHECK_MS = 500;
 static constexpr uint64_t SLEEP_DURATION_US = 5ULL * 60 * 1000000; // 5 minutes
 
+// ─── BME280 recovery
+// ────────────────────────────────────────────────────────────────
+
+static constexpr uint32_t SENSOR_POWER_SETTLE_MS = 250;
+static constexpr uint8_t BME280_INIT_ATTEMPTS = 3;
+static constexpr uint32_t BME280_INIT_RETRY_MS = 150;
+static constexpr uint8_t BME280_READ_ATTEMPTS = 3;
+static constexpr uint32_t BME280_READ_RETRY_MS = 250;
+
 // ─── Web server
 // ───────────────────────────────────────────────────────────────
 

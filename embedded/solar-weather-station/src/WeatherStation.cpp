@@ -133,17 +133,14 @@ void WeatherStation::initHardware() {
   gpio_hold_dis((gpio_num_t)PIN_SENSOR_PWR);
   pinMode(PIN_SENSOR_PWR, OUTPUT);
   digitalWrite(PIN_SENSOR_PWR, HIGH);
+  delay(SENSOR_POWER_SETTLE_MS);
 
   Wire.begin(I2C_SDA, I2C_SCL);
   ESP_LOGI(TAG, "Hardware initialised (sensor power on, I2C started)");
 }
 
 void WeatherStation::initSensors() {
-  if (!_bme280.begin(0x76, &Wire)) {
-    ESP_LOGE(TAG, "BME280 init failed");
-  } else {
-    ESP_LOGI(TAG, "BME280 ok");
-  }
+  _bme280Ready = initBme280();
 
   if (!_sht.init(Wire)) {
     ESP_LOGE(TAG, "SHT3x init failed");
@@ -165,6 +162,23 @@ void WeatherStation::initSensors() {
   _inaBattery.setMaxCurrentShunt(10.0f, INA226_SHUNT_OHM);
   _inaBattery.setAverage(INA226_AVG);
   ESP_LOGI(TAG, "INA226 battery ok");
+}
+
+bool WeatherStation::initBme280() {
+  for (uint8_t attempt = 1; attempt <= BME280_INIT_ATTEMPTS; ++attempt) {
+    if (_bme280.begin(0x76, &Wire)) {
+      ESP_LOGI(TAG, "BME280 ok");
+      return true;
+    }
+
+    ESP_LOGE(TAG, "BME280 init failed (attempt %u/%u)", attempt,
+             BME280_INIT_ATTEMPTS);
+    if (attempt < BME280_INIT_ATTEMPTS) {
+      delay(BME280_INIT_RETRY_MS);
+    }
+  }
+
+  return false;
 }
 
 void WeatherStation::connectWifi() {
@@ -226,15 +240,48 @@ void WeatherStation::drainMqtt(uint32_t durationMs) {
   }
 }
 
+bool WeatherStation::readBme280(SensorData &d) {
+  if (!_bme280Ready) {
+    ESP_LOGW(TAG, "BME280 not ready, retrying init before read");
+    _bme280Ready = initBme280();
+  }
+
+  if (!_bme280Ready) {
+    ESP_LOGE(TAG, "BME280 unavailable");
+    return false;
+  }
+
+  for (uint8_t attempt = 1; attempt <= BME280_READ_ATTEMPTS; ++attempt) {
+    float temperature = _bme280.readTemperature();
+    float humidity = _bme280.readHumidity();
+    float pressure = _bme280.readPressure() / 100.0f; // Pa → hPa
+
+    if (isfinite(temperature) && isfinite(humidity) && isfinite(pressure)) {
+      d.temperature = temperature;
+      d.humidity = humidity;
+      d.pressure = pressure;
+      return true;
+    }
+
+    ESP_LOGE(TAG,
+             "BME280 read failed (attempt %u/%u): temp=%.2f hum=%.2f "
+             "pressure=%.2f",
+             attempt, BME280_READ_ATTEMPTS, temperature, humidity, pressure);
+
+    if (attempt < BME280_READ_ATTEMPTS) {
+      delay(BME280_READ_RETRY_MS);
+    }
+  }
+
+  _bme280Ready = false;
+  return false;
+}
+
 SensorData WeatherStation::readSensors() {
   SensorData d;
 
   // BME280
-  d.temperature = _bme280.readTemperature();
-  d.humidity = _bme280.readHumidity();
-  d.pressure = _bme280.readPressure() / 100.0f; // Pa → hPa
-  if (isnan(d.temperature))
-    ESP_LOGE(TAG, "BME280 read failed");
+  readBme280(d);
 
   // SHT3x
   if (_sht.readSample()) {
