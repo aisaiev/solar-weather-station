@@ -27,14 +27,19 @@ void MeshtasticSerial::begin() {
 }
 
 void MeshtasticSerial::wakeNode() {
-  ESP_LOGI(TAG, "Pulsing RST pin LOW for 500 ms to wake Heltec V3");
-  digitalWrite(HELTEC_WAKE_PIN, LOW);
-  delay(500);
-  digitalWrite(HELTEC_WAKE_PIN, HIGH);
+  resetNode();
 
   ESP_LOGI(TAG, "Waiting %u ms for Meshtastic to boot...", HELTEC_BOOT_WAIT_MS);
   delay(HELTEC_BOOT_WAIT_MS);
   ESP_LOGI(TAG, "Heltec node should be ready");
+}
+
+void MeshtasticSerial::resetNode() {
+  ESP_LOGI(TAG, "Pulsing RST pin LOW for 500 ms to reset Heltec V3");
+  digitalWrite(HELTEC_WAKE_PIN, LOW);
+  delay(500);
+  digitalWrite(HELTEC_WAKE_PIN, HIGH);
+  ESP_LOGI(TAG, "Heltec RST pulse complete");
 }
 
 void MeshtasticSerial::sendEnvironmentTelemetry(const SensorData &d) {

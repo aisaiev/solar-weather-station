@@ -8,7 +8,7 @@
 // Meshtastic with the Serial Module configured in PROTO mode (115200 baud).
 //
 // Wiring (ESP32-S3 side → Heltec V3 side):
-//   HELTEC_WAKE_PIN  (GPIO6)  → Heltec RST  (100ms LOW pulse reboots Heltec)
+//   HELTEC_WAKE_PIN  (GPIO6)  → Heltec RST  (500ms LOW pulse reboots Heltec)
 //   HELTEC_SERIAL_TX (GPIO17) → Heltec GPIO4 (Serial Module RXD in Meshtastic
 //   config) HELTEC_SERIAL_RX (GPIO18) ← Heltec GPIO5 (Serial Module TXD in
 //   Meshtastic config) GND ──────────────────── GND
@@ -22,8 +22,11 @@ public:
   // Initialise UART2 and set the wake pin idle-high. Call once in setup.
   void begin();
 
-  // Pulse HELTEC_WAKE_PIN LOW for 100 ms to reset/wake the Heltec node,
-  // then block for HELTEC_BOOT_WAIT_MS while Meshtastic boots.
+  // Pulse HELTEC_WAKE_PIN LOW for 500 ms to reset the Heltec node.
+  void resetNode();
+
+  // Reset/wake the Heltec node, then block for HELTEC_BOOT_WAIT_MS while
+  // Meshtastic boots.
   void wakeNode();
 
   // Encode sensor readings as a Meshtastic environment telemetry packet

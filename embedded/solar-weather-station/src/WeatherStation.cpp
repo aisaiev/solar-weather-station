@@ -391,6 +391,23 @@ void WeatherStation::runOtaMode() {
         "reboot_task", 2048, nullptr, 1, nullptr);
   });
 
+  _server.on("/reset-mesh", HTTP_POST, [this](AsyncWebServerRequest *request) {
+    if (!request->authenticate("admin", SECRET_OTA_PASSWORD)) {
+      return request->requestAuthentication();
+    }
+
+    ESP_LOGW(TAG, "Meshtastic node reset requested from OTA UI");
+    request->send(200, "text/plain", "Meshtastic node reset requested.");
+
+    xTaskCreate(
+        [](void *param) {
+          auto *meshtastic = static_cast<MeshtasticSerial *>(param);
+          meshtastic->resetNode();
+          vTaskDelete(nullptr);
+        },
+        "mesh_reset_task", 2048, &_meshtastic, 1, nullptr);
+  });
+
   ElegantOTA.begin(&_server, "admin", SECRET_OTA_PASSWORD);
   _server.begin();
 

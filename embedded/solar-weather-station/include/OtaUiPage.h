@@ -102,10 +102,13 @@ inline constexpr const char *kPageHtml = R"HTML(
 <body>
     <main class="card">
         <h1>OTA Maintenance</h1>
-        <p>Use this page to update firmware or reboot the station.</p>
+        <p>Use this page to update firmware, reset the mesh node, or reboot the station.</p>
 
         <div class="actions">
             <a class="update" href="/update">Open OTA Update</a>
+            <form action="/reset-mesh" method="post" onsubmit="return confirm('Reset Meshtastic node now?');">
+                <button class="reboot" type="submit">Reset Meshtastic Node</button>
+            </form>
             <form action="/reboot" method="post" onsubmit="return confirm('Reboot device now?');">
                 <button class="reboot" type="submit">Reboot Device</button>
             </form>
